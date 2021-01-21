@@ -8,7 +8,7 @@
 
 # Parser
 	- Parse the file and represent the packets in some internal data structures.
-	- Already implemented in Python. Most notably Scapy.
+	- Already implemented in Python. E.g. DPKT, Scapy, Pypcapkit.
 
 # Analyzer
 	- Analyze the parsed packets and derive conclusions.
@@ -16,3 +16,10 @@
 	- List various hosts communicated to.
 	- List possible D/DOS attemps.
 	- List un intended connections. E.g. Someone trying to SSH into a server when he/she really shouldn't.
+
+
+## References
+  - https://pypi.org/project/pypcapkit/
+  - https://scapy.net/
+  - https://apackets.com
+  - https://dpkt.readthedocs.io/en/latest/
