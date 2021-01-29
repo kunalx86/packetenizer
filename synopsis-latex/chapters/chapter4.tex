@@ -1,0 +1,20 @@
+\chapter{Proposed System}
+{
+	The system is aimed to extract the key data points from the dump generated from the real time monitoring tools. Thus, the user is required to first locate the dump file from the host machine and upload the same onto our server via the web-based interface. The web-based interface will be a gateway to the server which will handle all the processing and is responsible for extracting the important information from the dump file. \\
+	The dump file received will then be parsed packet by packet. Each Packet will then be scrutinized to uncover all the hidden information.  The generated information will then undergo various checks where each bit of information will be checked and will be compared to specific parameters to ensure the Quality of Service. If any malicious / faulty packet is encountered in this process, it will be flagged and statistically analysed to check if there is any repetition of pattern encountered. This can also help the software to identify whether there is any Flooding or DOS Attack. \\
+	The converted output will be then sent to the web-based interface for displaying it to the user. User will then come into acquaintance with all the malicious activities and thus can take the necessary steps to prevent further continuation of such activities. 
+	\begin{description}
+		\item[The Web Interface]\ \\
+		{
+			The Web based interface serves the purpose of providing an interface to the user through which he/she can interact with the software. It will provide users with an intuitive and materialistic user interface. Web based interfaces will deprive the host machine from any unnecessary processing overhead and also make the interface platform independent.
+		}
+		\item[The Core Module]\ \\ 
+		{
+			The Core Module is responsible for parsing packets and retrieval of information. The received file will be parsed by Scapy module. The parsed packets will be used to extract core data points. Data structures will be used to maintain the state of various connections. Packets will also be passed to a statistic model to determine whether an attack was made on the network. Such data structures will be represented as JSON and sent back to the client to be rendered.			
+		}
+		\item[The Server-Side Processing Module] \ \\
+		{
+			The Server-Side Processing Module is responsible for managing user requests and handing them over to the appropriate modules. It serves up the front-end module and exposes the core module by the means of API endpoints.
+		}
+	\end{description}
+}
