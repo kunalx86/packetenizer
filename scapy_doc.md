@@ -2,7 +2,6 @@
 
 * By default rdpcap() returns list of packets that can be iterated.
 * List of methods available for packets
-`
 __all_slots__
 __bool__
 __bytes__
@@ -162,7 +161,6 @@ underlayer
 update_sent_time
 upper_bonds
 wirelen
-`
 * packet[layer_name] can be done to access that particular layer. E.g. `packet['TCP'] gives you access to TCP Layer of the packet`.
 * packet.fields gives a list of fields that can be indexed to a dict. E.g. `{'length': None, 'id': 45501, 'qr': 0, 'opcode': 0, 'aa': 0, 'tc': 0, 'rd': 1, 'ra': 0, 'z': 0, 'ad': 0, 'cd': 0, 'rcode': 0, 'qdcount': 1, 'ancount': 0, 'nscount': 0, 'arcount': 0, 'qd': <DNSQR  qname='registry.npmjs.org.' qtype=A qclass=IN |>, 'an': None, 'ns': None, 'ar': None} for a DNS query`.
 * In order to get access to value of a field following can be done. E.g. `getattr(tcp_packet, 'dport') => 443`.

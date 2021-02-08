@@ -5,3 +5,5 @@
 *.lof
 *.toc
 *.out
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
