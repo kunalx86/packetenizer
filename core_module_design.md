@@ -8,7 +8,7 @@
 * Assuming that we count another connection to same source and destination as different, we can uniquely identify a connection (source socket addr, dest socket addr) -> connection info
 * E.g. `(192.168.0.150:54124, 212.451.89.62:443) -> {data_up: 1200, data_down: 10000, ...}`
 * Data structure:\
-`\
+`
 {
     (souce socket addr, destination socket addr): {
         data_up: integer,
@@ -20,7 +20,7 @@
         l5_proto: string,
         ...
     }
-}\
+}
 `
 * The above shall work for traditional TCP, UDP messages. However, lower layer protocols like ICMP, ARP and others need a better solution.
 * For ICMP a non used port like 0 can be used. "Some" implementations do use port apparently (I highly doubt the latter one)
