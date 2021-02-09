@@ -63,8 +63,8 @@ TCP():
 * If connection specific encapsulation is worth it then we can develop classes or else we can stick to raw key/values
 
 ## Things left to do
-[] Addressing lower layer protocol keying
-[] Thinking about other connections like VPN (yea haven't even touched this)
-[] Discussing methods in the top level class
-[X] Whether to use class or raw key/value for connection specific information (Class based)
-[X] Figuring out a way to point to same connection object when source destination swap. The alternate solution in notebook is just a stupid "fix". (Mostly works)
+- [ ] Addressing lower layer protocol keying
+- [ ] Thinking about other connections like VPN (yea haven't even touched this)
+- [ ] Discussing methods in the top level class
+- [x] Whether to use class or raw key/value for connection specific information (Class based)
+- [x] Figuring out a way to point to same connection object when source destination swap. The alternate solution in notebook is just a stupid "fix". (Mostly works)
