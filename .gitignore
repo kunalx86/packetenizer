@@ -13,7 +13,6 @@
 bin/
 include/
 pip-selfcheck.json
-packetenizer/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -10,10 +10,10 @@
 
 ## Create virtualenv as follows (Run only once)
 - `pip install virtualenv --user`
-- `virtualenv -p /usr/bin/python3 packetenizer`
+- `virtualenv -p /usr/bin/python3 env`
 
 ## Run everytime
-- `source packetenizer/bin/activate`
+- `source env/bin/activate`
 - `pip install -r requirements.txt` (To stay up to date on modules)
 
 ## Run whenever a new package is installed

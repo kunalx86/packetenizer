@@ -1,6 +1,6 @@
 import sys
 from scapy.all import rdpcap
-from core_module import core
+from packetenizer import core
 
 def main():
     if len(sys.argv) <= 1:
