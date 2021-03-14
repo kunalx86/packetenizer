@@ -11,7 +11,8 @@ def main():
         scapy_packets = rdpcap(sys.argv[1])
         core_structure = core.CoreStructure(scapy_packets)
         core_structure.start()
-        print(core_structure)
+        for key in core_structure._core_dict.keys():
+            print(core_structure._core_dict[key])
     except IOError:
         print('Error!')
         exit(1)

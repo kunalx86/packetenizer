@@ -22,12 +22,18 @@ class CoreStructure:
         '''
         for packet in self._packets:
             #!TODO: Implement the core loop
-            if not packet.getlayer(2):
-                pass
-            elif packet.getlayer(2).name == 'TCP':
-                pass
-            elif packet.getlayer(2).name == 'UDP':
-                pass
+            s_socket, d_socket = module.extract_socket(packet)
+            if not s_socket or not d_socket:
+                continue
+            else:
+                if not (s_socket, d_socket) in self._core_dict:
+                    if not (d_socket, s_socket) in self._core_dict:
+                        # The connection doesn't exist create a new one
+                        self._core_dict[(s_socket, d_socket)] = module.create_connection(packet)
+                    else:
+                        # The connection does exist just set the swap=true
+                        self._core_dict[(d_socket, s_socket)].update(packet, swap=True)
+                        pass
 
     def __str__(self):
         return self._core_dict.__str__()
