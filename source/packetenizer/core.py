@@ -24,7 +24,9 @@ class CoreStructure:
             #!TODO: Implement the core loop
             s_socket, d_socket = module.extract_socket(packet)
             if not s_socket or not d_socket:
-                continue
+                # continue
+                print('Ughh.. Problem')
+                print(module.debug_packet(packet))
             else:
                 if not (s_socket, d_socket) in self._core_dict:
                     if not (d_socket, s_socket) in self._core_dict:
@@ -33,7 +35,8 @@ class CoreStructure:
                     else:
                         # The connection does exist just set the swap=true
                         self._core_dict[(d_socket, s_socket)].update(packet, swap=True)
-                        pass
+                else:
+                    self._core_dict[(s_socket, d_socket)].update(packet)
 
     def __str__(self):
         return self._core_dict.__str__()
