@@ -8,7 +8,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "samples/download.pcap"
+                "samples/download_tcp_problem.pcap"
             ]
         }
     ]

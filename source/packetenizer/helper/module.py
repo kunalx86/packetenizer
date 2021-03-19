@@ -21,8 +21,10 @@ tcp_flags = {
     'CWR': 0x80,
 }
 
-# Print imp debug info from a packet
 def debug_packet(raw_packet):
+    '''
+    Print imp debug info from a packet
+    '''
     return f'{raw_packet.name}, {raw_packet.src}->{raw_packet.dst}, {raw_packet.layers}'
 
 def extract_socket(raw_packet):
@@ -56,8 +58,11 @@ def create_connection(raw_packet):
         # Packet with no IP layer? Ughh will think about this later!
         return Invalid()
 
-# Anything that we don't know what to do with goes to this
 class Invalid:
+    '''
+    Anything that we don't know what to do with goes to this
+    '''
+
     def update(self, swap=True):
         pass
 
@@ -98,6 +103,7 @@ class TCPSegment:
     client_ack = None # From the pov of client
     server_ack = None
     protocol = ''
+    connection_finished = False
 
     def __init__(self, raw_data):
         self.s_port = getattr(raw_data, 'sport')
@@ -106,24 +112,29 @@ class TCPSegment:
         self.protocol = known_protocols[self.d_port] if (self.d_port) in known_protocols else 'UNKNOWN'
 
     def update(self, raw_data, swap=False):
+        # This implementation should be good enough for now
+        # Download/upload seems to be updating as intended
+        # We are also counting the magic byte, but it shouldn't affect anything drastically
+
         # Ack from server = Data uploaded (from client POV)
         # Ack from client = Data downloaded (from client POV)
-        flags = raw_data.getlayer(1).flags
-        # For now this doesn't seem to fix the issue with a connection where 'ack' suddenly changes
-        # Need to do more research on this one
+        flags = raw_data['TCP'].flags # Correct way to get flags
         if flags & tcp_flags['FIN'] or flags & tcp_flags['RST']:
+            # If the connection is Resetted or Finished we will no longer update the download/upload
+            self.connection_finished = True 
             return
-        if swap:
-            # Here the segment is coming from the server
-            if not self.server_ack:
+        if not self.connection_finished:
+            if swap:
+                # Here the segment is coming from the server
+                if not self.server_ack:
+                    self.server_ack = getattr(raw_data, 'ack')
+                self.data_uploaded += getattr(raw_data, 'ack') - self.server_ack
                 self.server_ack = getattr(raw_data, 'ack')
-            self.data_uploaded += getattr(raw_data, 'ack') - self.server_ack
-            self.server_ack = getattr(raw_data, 'ack')
-        else:
-            if not self.client_ack:
+            else:
+                if not self.client_ack:
+                    self.client_ack = getattr(raw_data, 'ack')
+                self.data_downloaded += getattr(raw_data, 'ack') - self.client_ack
                 self.client_ack = getattr(raw_data, 'ack')
-            self.data_downloaded += getattr(raw_data, 'ack') - self.client_ack
-            self.client_ack = getattr(raw_data, 'ack')
 
     def __str__(self):
         return f'{self.ip_packet}, {self.s_port}->{self.d_port}, {self.protocol}, Download: {self.data_downloaded}, Upload: {self.data_uploaded}'
