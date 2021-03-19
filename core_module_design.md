@@ -37,7 +37,7 @@
 * Scapy packet value can be passed on to the constructor to set values for the object
 * Methods can be provided to update data transferred for example which can be called in the main loop
 * Optionally we may also create classes for layer 5 protocols (DHCP, DNS) and if necessary even for TCP based protocols
-`
+```
 core_structure[key]: UDP(),
 core_structure[key]: TCP(),
 
@@ -53,7 +53,7 @@ TCP():
 	secured
 	data_up
 	data_down
-`
+```
 
 ## Implementation Specific
 * We can have a top level dictionary that can be keyed as mentioned above
@@ -65,6 +65,6 @@ TCP():
 ## Things left to do
 - [ ] Addressing lower layer protocol keying
 - [ ] Thinking about other connections like VPN (yea haven't even touched this)
-- [ ] Discussing methods in the top level class
+- [x] Discussing methods in the top level class
 - [x] Whether to use class or raw key/value for connection specific information (Class based)
 - [x] Figuring out a way to point to same connection object when source destination swap. The alternate solution in notebook is just a stupid "fix". (Mostly works)
