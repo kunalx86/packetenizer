@@ -21,6 +21,24 @@ tcp_flags = {
     'CWR': 0x80,
 }
 
+# Needed for scapy
+dns_types = {
+    15: 'MX',
+    16: 'TXT',
+    29: 'LOC',
+    12: 'PTR',
+    1: 'A',
+    28: 'AAAA',
+    255: 'ALL',
+    2: 'NS',
+    33: 'SRV'
+}
+
+# Needed for scapy
+dll_protocols = {
+    2048: 'ETHERNET'
+}
+
 def debug_packet(raw_packet):
     '''
     Print imp debug info from a packet
@@ -81,17 +99,32 @@ class ICMP:
     def __str__(self):
         return ''
 
+class Frame:
+    s_mac_addr = ''
+    d_mac_addr = ''
+    protocol = ''
+
+    def __init__(self, raw_data):
+        self.s_mac_addr = getattr(raw_data, 'src')
+        self.d_mac_addr = getattr(raw_data, 'dst')
+        self.protocol = dll_protocols[getattr(raw_data, 'type')] if dll_protocols[getattr(raw_data, 'type')] else 'UNKNOWN'
+
+    def __str__(self):
+        return f'{self.s_mac_addr}->{self.d_mac_addr}, {self.protocol}'
+
 # To represent IP info
 class IPPacket:
     s_ip_addr = ''
     d_ip_addr = ''
+    frame = None
 
     def __init__(self, raw_data):
         self.s_ip_addr = raw_data.getlayer(1).src
         self.d_ip_addr = raw_data.getlayer(1).dst
+        self.frame = Frame(raw_data)
 
     def __str__(self):
-        return f'{self.s_ip_addr}->{self.d_ip_addr}'
+        return f'{self.frame} {self.s_ip_addr}->{self.d_ip_addr}'
 
 # Store TCP segment info
 class TCPSegment:
@@ -145,15 +178,49 @@ class UDPDatagram:
     d_port = ''
     ip_packet = None
     protocol = ''
+    app_layer = None
 
     def __init__(self, raw_data):
         self.s_port = getattr(raw_data, 'sport')
         self.d_port = getattr(raw_data, 'dport')
         self.ip_packet = IPPacket(raw_data)
         self.protocol = known_protocols[self.d_port] if (self.d_port) in known_protocols else 'UNKNOWN'
+        if self.d_port == 53:
+            self.app_layer = DNS(raw_data)
 
     def update(self, raw_data, swap=False):
-        pass
+        if self.app_layer:
+            self.app_layer.update(raw_data, swap=swap)
 
     def __str__(self):
-        return f'{self.ip_packet} {self.s_port}->{self.d_port}, {self.protocol}'
+        return f'{self.ip_packet} {self.s_port}->{self.d_port}, {self.protocol} {self.app_layer}'
+
+class DNS:
+    record_type = None
+    query_response_time = None
+    query_initiated = None
+    domain_name = ''
+    ip_address = None # Only applicable if A/AAAA record in use
+
+    def __init__(self, raw_data):
+        dns_data = raw_data['DNS']
+        dns_qd = getattr(dns_data, 'qd')
+        self.record_type = dns_types[getattr(dns_qd, 'qtype')] if dns_types[getattr(dns_qd, 'qtype')] else 'UNKNOWN'
+        if getattr(dns_data, 'ra') == 0:
+            # The initial DNS can or cannot be a query
+            # If it is a query we do set query_initiated
+            self.query_initiated = float(raw_data.time)
+        self.domain_name = getattr(dns_qd, 'qname').decode('utf-8')
+
+    def update(self, raw_data, swap=False):
+        dns_data = raw_data['DNS']
+        if swap:
+            dns_an = getattr(dns_data, 'an')
+            if dns_an:
+                if self.record_type in ['A', 'AAAA']:
+                    self.ip_address = getattr(dns_an, 'rrname').decode('utf-8')  
+                if self.query_initiated:
+                    self.query_response_time = float(raw_data.time) - self.query_initiated
+
+    def __str__(self):
+        return f'{self.domain_name}->{self.ip_address}, {self.record_type} in {self.query_response_time}'
