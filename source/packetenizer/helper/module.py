@@ -51,12 +51,15 @@ def extract_socket(raw_packet):
     '''
     #TODO: Implement logic to extract identifier for proto other than TCP/UDP
     if raw_packet.getlayer(2):
+        s_ip = raw_packet.getlayer(1).src
+        d_ip = raw_packet.getlayer(1).dst
         if raw_packet.getlayer(2).name == 'TCP' or raw_packet.getlayer(2).name == 'UDP':
-            s_ip = raw_packet.getlayer(1).src
             s_port = getattr(raw_packet.getlayer(2), 'sport')
-            d_ip = raw_packet.getlayer(1).dst
             d_port = getattr(raw_packet.getlayer(2), 'dport')
             return (f'{s_ip}:{s_port}', f'{d_ip}:{d_port}')
+        elif raw_packet.getlayer(2).name == 'ICMP':
+            _id = getattr(raw_packet.getlayer(2), 'id')
+            return (f'{s_ip};{_id}', f'{d_ip};{_id}')
     return (None, None)
 
 def create_connection(raw_packet):
@@ -90,14 +93,59 @@ class Invalid:
 # For ICMP stuff, but more research needed
 class ICMP:
     #TODO: Implement ICMP 
-    def __init__(self, raw_data):
-        pass
+    ip_packet = None
+    _id = None
+    response_timestamps = {} # [Reply received?, Request Sent timestamp, Response Received timestamp, Difference, No. of retries]
 
-    def update(self, swap=False):
-        pass
+    def __init__(self, raw_data):
+        self.ip_packet = IPPacket(raw_data)
+        icmp_packet = raw_data.getlayer(2)
+        self._id = getattr(icmp_packet, 'id')
+        acknowledged = False if getattr(icmp_packet, 'type') == 8 else True
+        self.response_timestamps[getattr(icmp_packet, 'seq')] = [acknowledged, float(icmp_packet.time), 0.0, 0.0, 0]
+
+    def update(self, raw_data, swap=False):
+        icmp_packet = raw_data.getlayer(1)
+        seq_id = getattr(icmp_packet, 'seq')
+        if swap:
+            self.response_timestamps[seq_id][2] = float(icmp_packet.time)
+            self.response_timestamps[seq_id][3] = float(icmp_packet.time) - self.response_timestamps[seq_id][1]
+            self.response_timestamps[seq_id][0] = True
+        else:
+            if seq_id in self.response_timestamps:
+                # ICMP request resent
+                self.response_timestamps[seq_id][4] += 1
+            else:
+                # New request
+                self.response_timestamps[seq_id] = [False, float(icmp_packet.time), 0.0, 0.0, 0]
+
+    def avg_response_time(self):
+        avg_res = 0.0
+        for key in self.response_timestamps:
+            query = self.response_timestamps[key]
+            if query[4] > 0:
+                continue
+            avg_res += query[3]
+        avg_res = avg_res / len(self.response_timestamps)
+        return avg_res
+
+    def count_retries(self):
+        retries = 0
+        for key in self.response_timestamps:
+            query = self.response_timestamps[key]
+            retries += query[4]
+        return retries
+
+    def count_failed(self):
+        failed = 0
+        for key in self.response_timestamps:
+            query = self.response_timestamps[key]
+            if not query[0]:
+                failed += 1
+        return failed
 
     def __str__(self):
-        return ''
+        return f'{self.ip_packet}, ICMP, No. of req/res:{len(self.response_timestamps)}, Avg:{self.avg_response_time()}, Retries:{self.count_retries()}, Failed:{self.count_failed()}'
 
 class Frame:
     s_mac_addr = ''
@@ -117,14 +165,19 @@ class IPPacket:
     s_ip_addr = ''
     d_ip_addr = ''
     frame = None
+    protocol = ''
 
     def __init__(self, raw_data):
+        self.frame = Frame(raw_data)
         self.s_ip_addr = raw_data.getlayer(1).src
         self.d_ip_addr = raw_data.getlayer(1).dst
-        self.frame = Frame(raw_data)
+        if len(self.s_ip_addr.split('.')) == 4:
+            self.protocol = 'IPv4'
+        else:
+            self.protocol = 'IPv6'
 
     def __str__(self):
-        return f'{self.frame} {self.s_ip_addr}->{self.d_ip_addr}'
+        return f'{self.frame} {self.s_ip_addr}->{self.d_ip_addr}, {self.protocol}'
 
 # Store TCP segment info
 class TCPSegment:
@@ -170,7 +223,7 @@ class TCPSegment:
                 self.client_ack = getattr(raw_data, 'ack')
 
     def __str__(self):
-        return f'{self.ip_packet}, {self.s_port}->{self.d_port}, {self.protocol}, Download: {self.data_downloaded}, Upload: {self.data_uploaded}'
+        return f'{self.ip_packet}, {self.s_port}->{self.d_port}, TCP:{self.protocol}, Download: {self.data_downloaded}, Upload: {self.data_uploaded}'
 
 # Store UDP Datagram info
 class UDPDatagram:
@@ -181,9 +234,9 @@ class UDPDatagram:
     app_layer = None
 
     def __init__(self, raw_data):
+        self.ip_packet = IPPacket(raw_data)
         self.s_port = getattr(raw_data, 'sport')
         self.d_port = getattr(raw_data, 'dport')
-        self.ip_packet = IPPacket(raw_data)
         self.protocol = known_protocols[self.d_port] if (self.d_port) in known_protocols else 'UNKNOWN'
         if self.d_port == 53:
             self.app_layer = DNS(raw_data)
@@ -193,7 +246,7 @@ class UDPDatagram:
             self.app_layer.update(raw_data, swap=swap)
 
     def __str__(self):
-        return f'{self.ip_packet} {self.s_port}->{self.d_port}, {self.protocol} {self.app_layer}'
+        return f'{self.ip_packet} {self.s_port}->{self.d_port}, UDP:{self.protocol} {self.app_layer}'
 
 class DNS:
     record_type = None
@@ -218,7 +271,8 @@ class DNS:
             dns_an = getattr(dns_data, 'an')
             if dns_an:
                 if self.record_type in ['A', 'AAAA']:
-                    self.ip_address = getattr(dns_an, 'rrname').decode('utf-8')  
+                    response = getattr(dns_an, 'rrname').decode('utf-8')
+                    self.ip_address = response 
                 if self.query_initiated:
                     self.query_response_time = float(raw_data.time) - self.query_initiated
 
