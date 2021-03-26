@@ -95,10 +95,11 @@ class ICMP:
     #TODO: Implement ICMP 
     ip_packet = None
     _id = None
-    response_timestamps = {} # [Reply received?, Request Sent timestamp, Response Received timestamp, Difference, No. of retries]
+    response_timestamps = dict() # [Reply received?, Request Sent timestamp, Response Received timestamp, Difference, No. of retries]
 
     def __init__(self, raw_data):
         self.ip_packet = IPPacket(raw_data)
+        self.response_timestamps = dict()
         icmp_packet = raw_data.getlayer(2)
         self._id = getattr(icmp_packet, 'id')
         acknowledged = False if getattr(icmp_packet, 'type') == 8 else True
@@ -147,28 +148,13 @@ class ICMP:
     def __str__(self):
         return f'{self.ip_packet}, ICMP, No. of req/res:{len(self.response_timestamps)}, Avg:{self.avg_response_time()}, Retries:{self.count_retries()}, Failed:{self.count_failed()}'
 
-class Frame:
-    s_mac_addr = ''
-    d_mac_addr = ''
-    protocol = ''
-
-    def __init__(self, raw_data):
-        self.s_mac_addr = getattr(raw_data, 'src')
-        self.d_mac_addr = getattr(raw_data, 'dst')
-        self.protocol = dll_protocols[getattr(raw_data, 'type')] if dll_protocols[getattr(raw_data, 'type')] else 'UNKNOWN'
-
-    def __str__(self):
-        return f'{self.s_mac_addr}->{self.d_mac_addr}, {self.protocol}'
-
 # To represent IP info
 class IPPacket:
     s_ip_addr = ''
     d_ip_addr = ''
-    frame = None
     protocol = ''
 
     def __init__(self, raw_data):
-        self.frame = Frame(raw_data)
         self.s_ip_addr = raw_data.getlayer(1).src
         self.d_ip_addr = raw_data.getlayer(1).dst
         if len(self.s_ip_addr.split('.')) == 4:
@@ -177,7 +163,7 @@ class IPPacket:
             self.protocol = 'IPv6'
 
     def __str__(self):
-        return f'{self.frame} {self.s_ip_addr}->{self.d_ip_addr}, {self.protocol}'
+        return f'{self.s_ip_addr}->{self.d_ip_addr}, {self.protocol}'
 
 # Store TCP segment info
 class TCPSegment:
