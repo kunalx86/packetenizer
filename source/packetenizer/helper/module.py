@@ -7,6 +7,7 @@ known_protocols = {
     22: 'SSH',
     53: 'DNS',
     68: 'DHCP',
+    3478: 'STUN',
 }
 
 # Binary representation of flags used to mask bits
@@ -32,11 +33,6 @@ dns_types = {
     255: 'ALL',
     2: 'NS',
     33: 'SRV'
-}
-
-# Needed for scapy
-dll_protocols = {
-    2048: 'ETHERNET'
 }
 
 def debug_packet(raw_packet):
@@ -217,6 +213,8 @@ class UDPDatagram:
     d_port = ''
     ip_packet = None
     protocol = ''
+    downloaded = 0
+    uploaded = 0
     app_layer = None
 
     def __init__(self, raw_data):
@@ -230,9 +228,21 @@ class UDPDatagram:
     def update(self, raw_data, swap=False):
         if self.app_layer:
             self.app_layer.update(raw_data, swap=swap)
+        else:
+            udp_data = raw_data['UDP']
+            if swap:
+                self.downloaded += getattr(udp_data, 'len') - 8
+            else:
+                self.uploaded += getattr(udp_data, 'len') - 8
+
+    def dns_or_download(self):
+        if self.app_layer:
+            return f'{self.app_layer}'
+        else:
+            return f'Download: {self.downloaded}, Upload: {self.uploaded}'
 
     def __str__(self):
-        return f'{self.ip_packet} {self.s_port}->{self.d_port}, UDP:{self.protocol} {self.app_layer}'
+        return f'{self.ip_packet} {self.s_port}->{self.d_port}, UDP:{self.protocol} {self.dns_or_download()}'
 
 class DNS:
     record_type = None
@@ -257,8 +267,12 @@ class DNS:
             dns_an = getattr(dns_data, 'an')
             if dns_an:
                 if self.record_type in ['A', 'AAAA']:
-                    response = getattr(dns_an, 'rrname').decode('utf-8')
+                    response = getattr(dns_an, 'rdata')
+                    if type(response) == bytes:
+                        response = response.decode('utf-8')
                     self.ip_address = response 
+                    if response.split('.')[-1] == '':
+                        self.record_type = 'CNAME'
                 if self.query_initiated:
                     self.query_response_time = float(raw_data.time) - self.query_initiated
 
