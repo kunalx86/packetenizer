@@ -1,6 +1,3 @@
-#TODO: Implement the important classes
-
-#TODO: Fill this up!
 known_protocols = {
     80: 'HTTP',
     443: 'HTTPS',
@@ -46,7 +43,7 @@ def extract_socket(raw_packet):
     Retrieve socket addresses
     '''
     #TODO: Implement logic to extract identifier for proto other than TCP/UDP
-    if raw_packet.getlayer(2):
+    if raw_packet.getlayer(2) and raw_packet.getlayer(2).name != 'Padding':
         s_ip = raw_packet.getlayer(1).src
         d_ip = raw_packet.getlayer(1).dst
         if raw_packet.getlayer(2).name == 'TCP' or raw_packet.getlayer(2).name == 'UDP':
@@ -56,6 +53,10 @@ def extract_socket(raw_packet):
         elif raw_packet.getlayer(2).name == 'ICMP':
             _id = getattr(raw_packet.getlayer(2), 'id')
             return (f'{s_ip};{_id}', f'{d_ip};{_id}')
+    else:
+        s_adr = getattr(raw_packet.getlayer(0), 'src')
+        d_adr = getattr(raw_packet.getlayer(0), 'dst')
+        return (s_adr, d_adr)
     return (None, None)
 
 def create_connection(raw_packet):
@@ -65,26 +66,39 @@ def create_connection(raw_packet):
     '''
     if raw_packet.getlayer(1):
         # For now we are assuming IP cannot be on it's own
-        if raw_packet.getlayer(2).name == 'ICMP':
-            return ICMP(raw_packet)
-        elif raw_packet.getlayer(2).name == 'TCP':
-            return TCPSegment(raw_packet)
-        elif raw_packet.getlayer(2).name == 'UDP':
-            return UDPDatagram(raw_packet)
+        if raw_packet.getlayer(2):
+            if raw_packet.getlayer(2).name == 'ICMP':
+                return ICMP(raw_packet)
+            elif raw_packet.getlayer(2).name == 'TCP':
+                return TCPSegment(raw_packet)
+            elif raw_packet.getlayer(2).name == 'UDP':
+                return UDPDatagram(raw_packet)
+            else:
+                return Invalid(raw_packet)
+        else:
+            return Invalid(raw_packet)
     else:
         # Packet with no IP layer? Ughh will think about this later!
-        return Invalid()
+        return Invalid(raw_packet)
 
 class Invalid:
     '''
     Anything that we don't know what to do with goes to this
     '''
+    raw_bytes = None
+    l2_proto = None
+    l3_proto = None
 
-    def update(self, swap=True):
-        pass
+    def __init__(self, raw_data):
+        self.raw_bytes = str(raw_data)
+        self.l2_proto = raw_data.getlayer(0).name if raw_data.getlayer(0) else 'UNKNOWN'
+        self.l3_proto = raw_data.getlayer(1).name if raw_data.getlayer(1) else 'UNKWOWN'
+
+    def update(self, raw_data, swap=True):
+        return
 
     def __str__(self):
-        return ''
+        return f'UNKWOWN/INVALID: {self.l2_proto}, {self.l3_proto}'
 
 # For ICMP stuff, but more research needed
 class ICMP:

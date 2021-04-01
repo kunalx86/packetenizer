@@ -24,9 +24,9 @@ class CoreStructure:
             #!TODO: Implement the core loop
             s_socket, d_socket = module.extract_socket(packet)
             if not s_socket or not d_socket:
-                # continue
-                print('Ughh.. Problem')
-                print(module.debug_packet(packet))
+                continue
+                # print('Ughh.. Problem')
+                # print(module.debug_packet(packet))
             else:
                 if not (s_socket, d_socket) in self._core_dict:
                     if not (d_socket, s_socket) in self._core_dict:

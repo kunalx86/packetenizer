@@ -1,5 +1,5 @@
 import sys
-from scapy.all import rdpcap
+from scapy.all import PcapReader
 from packetenizer import core
 
 def main():
@@ -8,7 +8,7 @@ def main():
         print('Usage: python run.py path/to/dump_file')
         exit(1)
     try:
-        scapy_packets = rdpcap(sys.argv[1])
+        scapy_packets = PcapReader(sys.argv[1]) # Ignore the error
         core_structure = core.CoreStructure(scapy_packets)
         core_structure.start()
         for key in core_structure._core_dict.keys():
