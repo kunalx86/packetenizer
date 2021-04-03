@@ -62,6 +62,14 @@ TCP():
 * Wrapping them inside another class means for conversion to JSON we have to implement "DFS" like calls i.e. call JSON for every info (if nested)
 * If connection specific encapsulation is worth it then we can develop classes or else we can stick to raw key/values
 
+## Nmap scan detection technique
+* In a regular NMAP scan it is clear that the source (who is scanning), seems to send a SYN message to target port(s)
+* Now if the port is open the handshake goes as normal and after that a quick RST message is sent by source
+* If the port is close then in that case, the target quickly replies with an RST
+* Hence, in TCPSegment implmentation a way of detecting such unintended connection has been added
+* We can see the number of unintended connections and if all of them seem to be coming from a common source we can conclude that the source performed NMAP scan on the target
+* This ofcourse relies on the assumption that target doesn't have many ports open and the source performs scan on a range of ports rather than the well known specific ports
+
 ## Things left to do
 - [ ] Addressing lower layer protocol keying
 - [ ] Thinking about other connections like VPN (yea haven't even touched this)

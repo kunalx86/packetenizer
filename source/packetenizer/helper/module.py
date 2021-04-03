@@ -186,6 +186,7 @@ class TCPSegment:
     server_ack = None
     protocol = ''
     connection_finished = False
+    unintended_connection = False
 
     def __init__(self, raw_data):
         self.s_port = getattr(raw_data, 'sport')
@@ -204,6 +205,8 @@ class TCPSegment:
         if flags & tcp_flags['FIN'] or flags & tcp_flags['RST']:
             # If the connection is Resetted or Finished we will no longer update the download/upload
             self.connection_finished = True 
+            if not self.server_ack:
+                self.unintended_connection = True
             return
         if not self.connection_finished:
             if swap:
@@ -218,8 +221,11 @@ class TCPSegment:
                 self.data_downloaded += getattr(raw_data, 'ack') - self.client_ack
                 self.client_ack = getattr(raw_data, 'ack')
 
+    def is_unintended(self):
+        return 'Unintended' if self.unintended_connection else ''
+
     def __str__(self):
-        return f'{self.ip_packet}, {self.s_port}->{self.d_port}, TCP:{self.protocol}, Download: {self.data_downloaded}, Upload: {self.data_uploaded}'
+        return f'{self.ip_packet}, {self.s_port}->{self.d_port}, TCP:{self.protocol}, Download: {self.data_downloaded}, Upload: {self.data_uploaded}, {self.is_unintended()}'
 
 # Store UDP Datagram info
 class UDPDatagram:
