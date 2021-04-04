@@ -74,7 +74,7 @@ TCP():
 * Examining the output of dos attack (tcp based) it is clear that the attacker excessively creates connections
 * Most of these connections are intended so `unintended` flag won't help
 * However, in most cases data is never downloaded and sometimes a few KBs are uploaded at best
-* We can aggregate the amount of data transferred and no. of connections between a command source/destination
+* We can aggregate the amount of data transferred and no. of connections between a common source/destination
 * Using various attributes like data transferred, no. of connections etc and taking into account a threshold we can flag such DOS attempts
 * This cannot be easily extended to DDoS, however we can still aggregate based on the victim's address as attributes like data transferred won't change
 
