@@ -70,9 +70,17 @@ TCP():
 * We can see the number of unintended connections and if all of them seem to be coming from a common source we can conclude that the source performed NMAP scan on the target
 * This ofcourse relies on the assumption that target doesn't have many ports open and the source performs scan on a range of ports rather than the well known specific ports
 
+## DoS/DDoS Detection
+* Examining the output of dos attack (tcp based) it is clear that the attacker excessively creates connections
+* Most of these connections are intended so `unintended` flag won't help
+* However, in most cases data is never downloaded and sometimes a few KBs are uploaded at best
+* We can aggregate the amount of data transferred and no. of connections between a command source/destination
+* Using various attributes like data transferred, no. of connections etc and taking into account a threshold we can flag such DOS attempts
+* This cannot be easily extended to DDoS, however we can still aggregate based on the victim's address as attributes like data transferred won't change
+
 ## Things left to do
-- [ ] Addressing lower layer protocol keying
-- [ ] Thinking about other connections like VPN (yea haven't even touched this)
+- [x] Addressing lower layer protocol keying
+- [x] Thinking about other connections like VPN (yea haven't even touched this)
 - [x] Discussing methods in the top level class
 - [x] Whether to use class or raw key/value for connection specific information (Class based)
 - [x] Figuring out a way to point to same connection object when source destination swap. The alternate solution in notebook is just a stupid "fix". (Mostly works)

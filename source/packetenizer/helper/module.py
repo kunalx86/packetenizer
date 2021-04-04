@@ -53,7 +53,7 @@ def extract_socket(raw_packet):
         elif raw_packet.getlayer(2).name == 'ICMP':
             _id = getattr(raw_packet.getlayer(2), 'id')
             return (f'{s_ip};{_id}', f'{d_ip};{_id}')
-    else:
+    elif raw_packet.getlayer(0):
         s_adr = getattr(raw_packet.getlayer(0), 'src')
         d_adr = getattr(raw_packet.getlayer(0), 'dst')
         return (s_adr, d_adr)

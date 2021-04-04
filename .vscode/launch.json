@@ -8,7 +8,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "samples/dns_queries.pcap"
+                "samples/2015-10-23_win2.pcap"
             ]
         }
     ]

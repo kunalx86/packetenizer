@@ -22,7 +22,11 @@ class CoreStructure:
         '''
         for packet in self._packets:
             #!TODO: Implement the core loop
-            s_socket, d_socket = module.extract_socket(packet)
+            s_socket, d_socket = (None, None)
+            try:
+                s_socket, d_socket = module.extract_socket(packet)
+            except:
+                print(f'Error:{packet}')
             if not s_socket or not d_socket:
                 continue
                 # print('Ughh.. Problem')
