@@ -155,6 +155,9 @@ class ICMP:
                 failed += 1
         return failed
 
+    def count_packets(self):
+        return len(self.response_timestamps)
+
     def __str__(self):
         return f'{self.ip_packet}, ICMP, No. of req/res:{len(self.response_timestamps)}, Avg:{self.avg_response_time()}, Retries:{self.count_retries()}, Failed:{self.count_failed()}'
 
@@ -223,6 +226,12 @@ class TCPSegment:
 
     def is_unintended(self):
         return 'Unintended' if self.unintended_connection else ''
+    
+    def get_download(self):
+        return self.data_downloaded
+
+    def get_upload(self):
+        return self.data_uploaded
 
     def __str__(self):
         return f'{self.ip_packet}, {self.s_port}->{self.d_port}, TCP:{self.protocol}, Download: {self.data_downloaded}, Upload: {self.data_uploaded}, {self.is_unintended()}'
@@ -254,6 +263,12 @@ class UDPDatagram:
                 self.downloaded += getattr(udp_data, 'len') - 8
             else:
                 self.uploaded += getattr(udp_data, 'len') - 8
+    
+    def get_download(self):
+        return self.downloaded
+
+    def get_upload(self):
+        return self.uploaded
 
     def dns_or_download(self):
         if self.app_layer:
@@ -298,3 +313,17 @@ class DNS:
 
     def __str__(self):
         return f'{self.domain_name}->{self.ip_address}, {self.record_type} in {self.query_response_time}'
+        
+def get_addr_from_socket(socket):
+    if socket.split(':'):
+        return socket.split(':')[0]
+    else:
+        return socket.split(';')[0]
+
+def analyzer(core_structure):
+    aggregated_dict = {}
+    for key in core_structure._core_dict:
+        s_socket, d_socket = key
+        d_addr = get_addr_from_socket(d_socket)
+        s_addr = get_addr_from_socket(s_socket)
+        pass

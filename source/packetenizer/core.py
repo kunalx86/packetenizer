@@ -21,7 +21,6 @@ class CoreStructure:
         This function begins the actual analysis of scapy parsed file
         '''
         for packet in self._packets:
-            #!TODO: Implement the core loop
             s_socket, d_socket = (None, None)
             try:
                 s_socket, d_socket = module.extract_socket(packet)
