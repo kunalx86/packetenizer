@@ -1,4 +1,5 @@
 import datetime
+from itertools import zip_longest
 
 known_protocols = {
     80: 'HTTP',
@@ -191,13 +192,18 @@ class TCPSegment:
     server_ack = None
     protocol = ''
     connection_finished = False
+    reception_timestamps = []
+    transmission_timestamps = []
     unintended_connection = False
 
     def __init__(self, raw_data):
+        self.reception_timestamps = []
+        self.transmission_timestamps = []
         self.s_port = getattr(raw_data, 'sport')
         self.d_port = getattr(raw_data, 'dport')
         self.ip_packet = IPPacket(raw_data)
         self.protocol = known_protocols[self.d_port] if (self.d_port) in known_protocols else 'UNKNOWN'
+        self.transmission_timestamps.append(float(raw_data.time))
 
     def update(self, raw_data, swap=False):
         # This implementation should be good enough for now
@@ -216,15 +222,28 @@ class TCPSegment:
         if not self.connection_finished:
             if swap:
                 # Here the segment is coming from the server
+                self.transmission_timestamps.append(float(raw_data.time))
                 if not self.server_ack:
                     self.server_ack = getattr(raw_data, 'ack')
                 self.data_uploaded += getattr(raw_data, 'ack') - self.server_ack
                 self.server_ack = getattr(raw_data, 'ack')
             else:
+                self.reception_timestamps.append(float(raw_data.time))
                 if not self.client_ack:
                     self.client_ack = getattr(raw_data, 'ack')
                 self.data_downloaded += getattr(raw_data, 'ack') - self.client_ack
                 self.client_ack = getattr(raw_data, 'ack')
+
+    def get_average_timestamps(self):
+        r_avg, t_avg = (0.0, 0.0)
+        for r_time, t_time in zip_longest(self.reception_timestamps, self.transmission_timestamps):
+            r_avg += r_time if r_time else 0
+            t_avg += t_time if t_time else 0
+        r_avg = r_avg / len(self.reception_timestamps) if len(self.reception_timestamps) != 0 else -1
+        t_avg = t_avg / len(self.transmission_timestamps) if len(self.transmission_timestamps) != 0 else -1
+        r_avg = datetime.datetime.fromtimestamp(r_avg).microsecond/1000
+        t_avg = datetime.datetime.fromtimestamp(t_avg).microsecond/1000
+        return (r_avg, t_avg)
 
     def is_unintended(self):
         return 'Unintended' if self.unintended_connection else ''
@@ -236,7 +255,8 @@ class TCPSegment:
         return self.data_uploaded
 
     def __str__(self):
-        return f'{self.ip_packet}, {self.s_port}->{self.d_port}, TCP:{self.protocol}, Download: {self.data_downloaded}, Upload: {self.data_uploaded}, {self.is_unintended()}'
+        r_avg, t_avg = self.get_average_timestamps()
+        return f'{self.ip_packet}, {self.s_port}->{self.d_port}, TCP:{self.protocol}, Download: {self.data_downloaded}, Upload: {self.data_uploaded}, {self.is_unintended()} Avg Rec/Tra gap: {r_avg}/{t_avg}ms'
 
 # Store UDP Datagram info
 class UDPDatagram:
@@ -325,10 +345,30 @@ def get_addr_from_socket(socket):
     else:
         return socket.split(';')[0]
 
+def init_tcp_agg_dict():
+    return {
+        'uploaded': 0,
+        'downloaded': 0,
+        'retries': 0,
+        'avg_rec': 0.0,
+        'avg_trans': 0.0,
+    }
+
 def analyzer(core_structure):
     aggregated_dict = {}
-    for key in core_structure._core_dict:
+    core_dict = core_structure._core_dict
+    for key in core_dict:
+        current_core_obj = core_dict[key]
         s_socket, d_socket = key
         d_addr = get_addr_from_socket(d_socket)
         s_addr = get_addr_from_socket(s_socket)
-        pass
+        # For now let's just deal with TCP
+        if isinstance(current_core_obj, TCPSegment):
+            current_agg_obj = aggregated_dict[(s_addr, d_addr)] if (s_addr, d_addr) in aggregated_dict else init_tcp_agg_dict()
+            current_agg_obj['uploaded'] += current_core_obj.get_upload()
+            current_agg_obj['downloaded'] += current_core_obj.get_download()
+            current_agg_obj['retries'] += 1 if current_core_obj.is_unintended() != '' else 0
+            aggregated_dict[(s_addr, d_addr)] = current_agg_obj
+        else:
+            continue
+    return aggregated_dict
