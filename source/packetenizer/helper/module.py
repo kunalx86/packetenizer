@@ -1,3 +1,5 @@
+import datetime
+
 known_protocols = {
     80: 'HTTP',
     443: 'HTTPS',
@@ -113,14 +115,14 @@ class ICMP:
         icmp_packet = raw_data.getlayer(2)
         self._id = getattr(icmp_packet, 'id')
         acknowledged = False if getattr(icmp_packet, 'type') == 8 else True
-        self.response_timestamps[getattr(icmp_packet, 'seq')] = [acknowledged, float(icmp_packet.time), 0.0, 0.0, 0]
+        self.response_timestamps[getattr(icmp_packet, 'seq')] = [acknowledged, float(raw_data.time), 0.0, 0.0, 0]
 
     def update(self, raw_data, swap=False):
         icmp_packet = raw_data.getlayer(1)
         seq_id = getattr(icmp_packet, 'seq')
         if swap:
-            self.response_timestamps[seq_id][2] = float(icmp_packet.time)
-            self.response_timestamps[seq_id][3] = float(icmp_packet.time) - self.response_timestamps[seq_id][1]
+            self.response_timestamps[seq_id][2] = float(raw_data.time)
+            self.response_timestamps[seq_id][3] = float(raw_data.time) - self.response_timestamps[seq_id][1]
             self.response_timestamps[seq_id][0] = True
         else:
             if seq_id in self.response_timestamps:
@@ -128,7 +130,7 @@ class ICMP:
                 self.response_timestamps[seq_id][4] += 1
             else:
                 # New request
-                self.response_timestamps[seq_id] = [False, float(icmp_packet.time), 0.0, 0.0, 0]
+                self.response_timestamps[seq_id] = [False, float(raw_data.time), 0.0, 0.0, 0]
 
     def avg_response_time(self):
         avg_res = 0.0
@@ -138,7 +140,7 @@ class ICMP:
                 continue
             avg_res += query[3]
         avg_res = avg_res / len(self.response_timestamps)
-        return avg_res
+        return datetime.datetime.fromtimestamp(avg_res).microsecond/1000
 
     def count_retries(self):
         retries = 0
@@ -159,7 +161,7 @@ class ICMP:
         return len(self.response_timestamps)
 
     def __str__(self):
-        return f'{self.ip_packet}, ICMP, No. of req/res:{len(self.response_timestamps)}, Avg:{self.avg_response_time()}, Retries:{self.count_retries()}, Failed:{self.count_failed()}'
+        return f'{self.ip_packet}, ICMP, No. of req/res:{len(self.response_timestamps)}, Avg:{self.avg_response_time()}ms, Retries:{self.count_retries()}, Failed:{self.count_failed()}'
 
 # To represent IP info
 class IPPacket:
@@ -309,10 +311,13 @@ class DNS:
                     if response.split('.')[-1] == '':
                         self.record_type = 'CNAME'
                 if self.query_initiated:
-                    self.query_response_time = float(raw_data.time) - self.query_initiated
+                    dt = float(raw_data.time)
+                    self.query_response_time = dt - self.query_initiated
+                    dt = datetime.datetime.fromtimestamp(self.query_response_time)
+                    self.query_response_time = dt.microsecond/1000
 
     def __str__(self):
-        return f'{self.domain_name}->{self.ip_address}, {self.record_type} in {self.query_response_time}'
+        return f'{self.domain_name}->{self.ip_address}, {self.record_type} in {self.query_response_time}ms'
         
 def get_addr_from_socket(socket):
     if socket.split(':'):
