@@ -109,12 +109,14 @@ class ICMP:
     ip_packet = None
     _id = None
     response_timestamps = dict() # [Reply received?, Request Sent timestamp, Response Received timestamp, Difference, No. of retries]
+    _type = None
 
     def __init__(self, raw_data):
         self.ip_packet = IPPacket(raw_data)
         self.response_timestamps = dict()
         icmp_packet = raw_data.getlayer(2)
         self._id = getattr(icmp_packet, 'id')
+        self._type = 'PING' if getattr(icmp_packet, 'type') == 8 else 'PORT UNREACHABLE'
         acknowledged = False if getattr(icmp_packet, 'type') == 8 else True
         self.response_timestamps[getattr(icmp_packet, 'seq')] = [acknowledged, float(raw_data.time), 0.0, 0.0, 0]
 
@@ -162,7 +164,7 @@ class ICMP:
         return len(self.response_timestamps)
 
     def __str__(self):
-        return f'{self.ip_packet}, ICMP, No. of req/res:{len(self.response_timestamps)}, Avg:{self.avg_response_time()}ms, Retries:{self.count_retries()}, Failed:{self.count_failed()}'
+        return f'{self.ip_packet}, ICMP {self._type}, No. of req/res:{len(self.response_timestamps)}, Avg:{self.avg_response_time()}ms, Retries:{self.count_retries()}, Failed:{self.count_failed()}'
 
 # To represent IP info
 class IPPacket:
@@ -266,15 +268,23 @@ class UDPDatagram:
     protocol = ''
     downloaded = 0
     uploaded = 0
+    reception_timestamps = []
+    transmission_timestamps = []
     app_layer = None
 
     def __init__(self, raw_data):
         self.ip_packet = IPPacket(raw_data)
         self.s_port = getattr(raw_data, 'sport')
         self.d_port = getattr(raw_data, 'dport')
+        self.downloaded, self.uploaded = (0, 0)
+        self.reception_timestamps = []
+        self.transmission_timestamps = []
         self.protocol = known_protocols[self.d_port] if (self.d_port) in known_protocols else 'UNKNOWN'
         if self.d_port == 53:
             self.app_layer = DNS(raw_data)
+        else:
+            self.transmission_timestamps.append(float(raw_data.time))
+
 
     def update(self, raw_data, swap=False):
         if self.app_layer:
@@ -282,8 +292,10 @@ class UDPDatagram:
         else:
             udp_data = raw_data['UDP']
             if swap:
+                self.reception_timestamps.append(float(raw_data.time))
                 self.downloaded += getattr(udp_data, 'len') - 8
             else:
+                self.transmission_timestamps.append(float(raw_data.time))
                 self.uploaded += getattr(udp_data, 'len') - 8
     
     def get_download(self):
@@ -292,6 +304,20 @@ class UDPDatagram:
     def get_upload(self):
         return self.uploaded
 
+    def get_average_timestamps(self):
+        r_avg, t_avg = (0.0, 0.0)
+        for r_time, t_time in zip_longest(self.reception_timestamps, self.transmission_timestamps):
+            r_avg += r_time if r_time else 0
+            t_avg += t_time if t_time else 0
+        r_avg = r_avg / len(self.reception_timestamps) if len(self.reception_timestamps) != 0 else -1
+        t_avg = t_avg / len(self.transmission_timestamps) if len(self.transmission_timestamps) != 0 else -1
+        r_avg = datetime.datetime.fromtimestamp(r_avg).microsecond/1000
+        t_avg = datetime.datetime.fromtimestamp(t_avg).microsecond/1000
+        return (r_avg, t_avg)
+
+    def is_dns(self):
+        return True if self.app_layer else False
+
     def dns_or_download(self):
         if self.app_layer:
             return f'{self.app_layer}'
@@ -299,7 +325,8 @@ class UDPDatagram:
             return f'Download: {self.downloaded}, Upload: {self.uploaded}'
 
     def __str__(self):
-        return f'{self.ip_packet} {self.s_port}->{self.d_port}, UDP:{self.protocol} {self.dns_or_download()}'
+        r_avg, t_avg = self.get_average_timestamps()
+        return f'{self.ip_packet} {self.s_port}->{self.d_port}, UDP:{self.protocol} {self.dns_or_download()}, Avg Rec/Tra Gap: {r_avg}/{t_avg}'
 
 class DNS:
     record_type = None
@@ -340,7 +367,7 @@ class DNS:
         return f'{self.domain_name}->{self.ip_address}, {self.record_type} in {self.query_response_time}ms'
         
 def get_addr_from_socket(socket):
-    if socket.split(':'):
+    if len(socket.split(':')) > 1 and len(socket.split(':')) < 5:
         return socket.split(':')[0]
     else:
         return socket.split(';')[0]
@@ -349,10 +376,29 @@ def init_tcp_agg_dict():
     return {
         'uploaded': 0,
         'downloaded': 0,
-        'retries': 0,
+        'unintended': 0,
+        'avg_rec': 0.0,  # Might get rid of this and below
+        'avg_trans': 0.0,
+        'connections': 0,
+    }
+
+def init_udp_agg_dict():
+    return {
+        'uploaded': 0,
+        'downloaded': 0,
         'avg_rec': 0.0,
         'avg_trans': 0.0,
+        'connections': 0,
     }
+
+def init_dns_agg_dict():
+    return {}
+
+def init_icmp_agg_dict():
+    return {}
+
+def init_invalid_agg_dict():
+    return {}
 
 def analyzer(core_structure):
     aggregated_dict = {}
@@ -362,13 +408,25 @@ def analyzer(core_structure):
         s_socket, d_socket = key
         d_addr = get_addr_from_socket(d_socket)
         s_addr = get_addr_from_socket(s_socket)
+        is_dns = False
+        if isinstance(current_core_obj, UDPDatagram):
+            is_dns = current_core_obj.is_dns()
         # For now let's just deal with TCP
-        if isinstance(current_core_obj, TCPSegment):
+        if isinstance(current_core_obj, TCPSegment) or (isinstance(current_core_obj, UDPDatagram) and not is_dns):
             current_agg_obj = aggregated_dict[(s_addr, d_addr)] if (s_addr, d_addr) in aggregated_dict else init_tcp_agg_dict()
             current_agg_obj['uploaded'] += current_core_obj.get_upload()
             current_agg_obj['downloaded'] += current_core_obj.get_download()
-            current_agg_obj['retries'] += 1 if current_core_obj.is_unintended() != '' else 0
-            aggregated_dict[(s_addr, d_addr)] = current_agg_obj
+            if isinstance(current_core_obj, TCPSegment):
+                current_agg_obj['unintended'] += 1 if current_core_obj.is_unintended() != '' else 0
+            avg_rec, avg_trans = current_core_obj.get_average_timestamps()
+            current_agg_obj['avg_rec'] += avg_rec
+            current_agg_obj['avg_trans'] += avg_trans
+            current_agg_obj['connections'] += 1
+        elif isinstance(current_core_obj, DNS):
+            current_agg_obj = aggregated_dict[(s_addr, d_addr)] if (s_addr, d_addr) in aggregated_dict else init_dns_agg_dict()
+        elif isinstance(current_core_obj, ICMP):
+            current_agg_obj = aggregated_dict[(s_addr, d_addr)] if (s_addr, d_addr) in aggregated_dict else init_icmp_agg_dict()
         else:
-            continue
+            current_agg_obj = aggregated_dict[(s_addr, d_addr)] if (s_addr, d_addr) in aggregated_dict else init_invalid_agg_dict()
+        aggregated_dict[(s_addr, d_addr)] = current_agg_obj
     return aggregated_dict

@@ -16,7 +16,7 @@ def main():
             # print(core_structure._core_dict[key])
         aggregated_dict = module.analyzer(core_structure)
         for key in aggregated_dict:
-            print(aggregated_dict[key])
+            print(key, aggregated_dict[key])
     except IOError:
         print('Error!')
         exit(1)
