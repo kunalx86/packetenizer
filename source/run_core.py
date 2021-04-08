@@ -12,11 +12,11 @@ def main():
         scapy_packets = rdpcap(sys.argv[1]) # Ignore the error
         core_structure = core.CoreStructure(scapy_packets)
         core_structure.start()
-        # for key in core_structure._core_dict.keys():
-            # print(core_structure._core_dict[key])
+        for key in core_structure._core_dict.keys():
+            print(core_structure._core_dict[key])
         aggregated_dict = module.analyzer(core_structure)
         for key in aggregated_dict:
-            print(key, aggregated_dict[key])
+            print(aggregated_dict[key])
     except IOError:
         print('Error!')
         exit(1)
