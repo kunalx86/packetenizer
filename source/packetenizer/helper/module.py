@@ -192,6 +192,7 @@ class TCPSegment:
     data_uploaded = 0
     client_ack = None # From the pov of client
     server_ack = None
+    app_layer = None
     protocol = ''
     connection_finished = False
     reception_timestamps = []
@@ -205,6 +206,7 @@ class TCPSegment:
         self.d_port = getattr(raw_data, 'dport')
         self.ip_packet = IPPacket(raw_data)
         self.protocol = known_protocols[self.d_port] if (self.d_port) in known_protocols else 'UNKNOWN'
+        self.app_layer = DNS(raw_data) if self.d_port == 53 else None
         self.transmission_timestamps.append(float(raw_data.time))
 
     def update(self, raw_data, swap=False):
@@ -221,20 +223,24 @@ class TCPSegment:
             if not self.server_ack:
                 self.unintended_connection = True
             return
-        if not self.connection_finished:
-            if swap:
-                # Here the segment is coming from the server
-                self.transmission_timestamps.append(float(raw_data.time))
-                if not self.server_ack:
+
+        if self.app_layer:
+            self.app_layer.update(raw_data, swap)
+        else:
+            if not self.connection_finished:
+                if swap:
+                    # Here the segment is coming from the server
+                    self.transmission_timestamps.append(float(raw_data.time))
+                    if not self.server_ack:
+                        self.server_ack = getattr(raw_data, 'ack')
+                    self.data_uploaded += getattr(raw_data, 'ack') - self.server_ack
                     self.server_ack = getattr(raw_data, 'ack')
-                self.data_uploaded += getattr(raw_data, 'ack') - self.server_ack
-                self.server_ack = getattr(raw_data, 'ack')
-            else:
-                self.reception_timestamps.append(float(raw_data.time))
-                if not self.client_ack:
+                else:
+                    self.reception_timestamps.append(float(raw_data.time))
+                    if not self.client_ack:
+                        self.client_ack = getattr(raw_data, 'ack')
+                    self.data_downloaded += getattr(raw_data, 'ack') - self.client_ack
                     self.client_ack = getattr(raw_data, 'ack')
-                self.data_downloaded += getattr(raw_data, 'ack') - self.client_ack
-                self.client_ack = getattr(raw_data, 'ack')
 
     def get_average_timestamps(self):
         r_avg, t_avg = (0.0, 0.0)
@@ -255,10 +261,16 @@ class TCPSegment:
 
     def get_upload(self):
         return self.data_uploaded
+    
+    def print_dns(self):
+        return self.app_layer if self.app_layer else ''
+
+    def is_dns(self):
+        return True if self.app_layer else False
 
     def __str__(self):
         r_avg, t_avg = self.get_average_timestamps()
-        return f'{self.ip_packet}, {self.s_port}->{self.d_port}, TCP:{self.protocol}, Download: {self.data_downloaded}, Upload: {self.data_uploaded}, {self.is_unintended()} Avg Rec/Tra gap: {r_avg}/{t_avg}ms'
+        return f'{self.ip_packet}, {self.s_port}->{self.d_port}, TCP:{self.protocol}, {self.print_dns()} Download: {self.data_downloaded}, Upload: {self.data_uploaded}, {self.is_unintended()} Avg Rec/Tra gap: {r_avg}/{t_avg}ms'
 
 # Store UDP Datagram info
 class UDPDatagram:
@@ -426,11 +438,11 @@ def analyzer(core_structure):
         d_addr = get_addr_from_socket(d_socket)
         s_addr = get_addr_from_socket(s_socket)
         is_dns = False
-        if isinstance(current_core_obj, UDPDatagram):
+        if isinstance(current_core_obj, UDPDatagram) or isinstance(current_core_obj, TCPSegment):
             is_dns = current_core_obj.is_dns()
         # (1.1.1.1, 8.8.8.8) => (1.1.1.1;t/u/d/i/n, 8.8.8.8;t/u/d/i/n)
         _key = ''
-        if isinstance(current_core_obj, TCPSegment) or (isinstance(current_core_obj, UDPDatagram) and not is_dns):
+        if (isinstance(current_core_obj, TCPSegment) or isinstance(current_core_obj, UDPDatagram)) and not is_dns:
             if isinstance(current_core_obj, TCPSegment):
                 _key = (f'{s_addr};t', f'{d_addr};t')
                 current_agg_obj = aggregated_dict[_key] if _key in aggregated_dict else init_tcp_agg_dict()
@@ -505,6 +517,9 @@ def analyzer(core_structure):
             if current_agg_obj['uploaded'] > 10000 and current_agg_obj['avg_rec'] == 0.0:
                 # Maybe UDP based DoS
                 current_agg_obj['is_dos'] = True
+        
+        elif current_agg_obj['type'] == 'DNS':
+            current_agg_obj['avg_response_time'] = current_agg_obj['avg_response_time'] / current_agg_obj['queries_resolved']
 
         elif current_agg_obj['type'] == 'ICMP':
             # Calculating average
