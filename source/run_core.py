@@ -1,7 +1,9 @@
 import sys
 from scapy.all import rdpcap 
+from scapy.error import Scapy_Exception
 from packetenizer import core
 from packetenizer.helper import module
+from packetenizer.helper import analyzer
 
 def main():
     if len(sys.argv) <= 1:
@@ -14,11 +16,13 @@ def main():
         core_structure.start()
         for key in core_structure._core_dict.keys():
             print(core_structure._core_dict[key])
-        aggregated_dict = module.analyzer(core_structure)
+        aggregated_dict = analyzer.analyze(core_structure)
         for key in aggregated_dict:
             print(aggregated_dict[key])
-    except IOError:
-        print('Error!')
+    except Scapy_Exception:
+        print('Couldn\'t parse file')
+    except FileNotFoundError:
+        print('File doesn\'t exist')
         exit(1)
 
 if __name__ == '__main__':

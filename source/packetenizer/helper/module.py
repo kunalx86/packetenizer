@@ -1,39 +1,6 @@
 import datetime
 from itertools import zip_longest
-
-known_protocols = {
-    80: 'HTTP',
-    443: 'HTTPS',
-    22: 'SSH',
-    53: 'DNS',
-    68: 'DHCP',
-    3478: 'STUN',
-}
-
-# Binary representation of flags used to mask bits
-tcp_flags = {
-    'FIN': 0x01,
-    'SYN': 0x02,
-    'RST': 0x04,
-    'PSH': 0x08,
-    'ACK': 0x10,
-    'URG': 0x20,
-    'ECE': 0x40,
-    'CWR': 0x80,
-}
-
-# Needed for scapy
-dns_types = {
-    15: 'MX',
-    16: 'TXT',
-    29: 'LOC',
-    12: 'PTR',
-    1: 'A',
-    28: 'AAAA',
-    255: 'ALL',
-    2: 'NS',
-    33: 'SRV'
-}
+from .constants import known_protocols, dns_types, tcp_flags
 
 def debug_packet(raw_packet):
     '''
@@ -41,12 +8,12 @@ def debug_packet(raw_packet):
     '''
     return f'{raw_packet.name}, {raw_packet.src}->{raw_packet.dst}, {raw_packet.layers}'
 
-def extract_socket(raw_packet):
+def extract_socket(raw_packet) -> tuple:
     '''
     Retrieve socket addresses
     '''
     #TODO: Implement logic to extract identifier for proto other than TCP/UDP
-    if raw_packet.getlayer(2) and raw_packet.getlayer(2).name != 'Padding':
+    if raw_packet.getlayer(2) and raw_packet.getlayer(1).name.find('IP') == 0:
         s_ip = raw_packet.getlayer(1).src
         d_ip = raw_packet.getlayer(1).dst
         if raw_packet.getlayer(2).name == 'TCP' or raw_packet.getlayer(2).name == 'UDP':
@@ -103,9 +70,11 @@ class Invalid:
     def __str__(self):
         return f'UNKWOWN/INVALID: {self.l2_proto}, {self.l3_proto}'
 
-# For ICMP stuff, but more research needed
+# For now support only for Ping (reply/response) and Port Unreachable
 class ICMP:
-    #TODO: Implement ICMP 
+    '''
+    To store ICMP packets
+    '''
     ip_packet = None
     _id = None
     response_timestamps = dict() # [Reply received?, Request Sent timestamp, Response Received timestamp, Difference, No. of retries]
@@ -166,8 +135,10 @@ class ICMP:
     def __str__(self):
         return f'{self.ip_packet}, ICMP {self._type}, No. of req/res:{len(self.response_timestamps)}, Avg:{self.avg_response_time()}ms, Retries:{self.count_retries()}, Failed:{self.count_failed()}'
 
-# To represent IP info
 class IPPacket:
+    '''
+    To represent IP info
+    '''
     s_ip_addr = ''
     d_ip_addr = ''
     protocol = ''
@@ -183,8 +154,10 @@ class IPPacket:
     def __str__(self):
         return f'{self.s_ip_addr}->{self.d_ip_addr}, {self.protocol}'
 
-# Store TCP segment info
 class TCPSegment:
+    '''
+    Store TCP segment info
+    '''
     s_port = ''
     d_port = ''
     ip_packet = None
@@ -204,9 +177,12 @@ class TCPSegment:
         self.transmission_timestamps = []
         self.s_port = getattr(raw_data, 'sport')
         self.d_port = getattr(raw_data, 'dport')
+        self.app_layer = None
         self.ip_packet = IPPacket(raw_data)
         self.protocol = known_protocols[self.d_port] if (self.d_port) in known_protocols else 'UNKNOWN'
-        self.app_layer = DNS(raw_data) if self.d_port == 53 else None
+        # Necessary because many times the DNS data is simply not provided
+        if 'DNS' in raw_data:
+            self.app_layer = DNS(raw_data) if self.d_port == 53 else None
         self.transmission_timestamps.append(float(raw_data.time))
 
     def update(self, raw_data, swap=False):
@@ -242,7 +218,7 @@ class TCPSegment:
                     self.data_downloaded += getattr(raw_data, 'ack') - self.client_ack
                     self.client_ack = getattr(raw_data, 'ack')
 
-    def get_average_timestamps(self):
+    def get_average_timestamps(self) -> tuple:
         r_avg, t_avg = (0.0, 0.0)
         for r_time, t_time in zip_longest(self.reception_timestamps, self.transmission_timestamps):
             r_avg += r_time if r_time else 0
@@ -253,27 +229,29 @@ class TCPSegment:
         t_avg = datetime.datetime.fromtimestamp(t_avg).microsecond/1000
         return (r_avg, t_avg)
 
-    def is_unintended(self):
+    def is_unintended(self) -> str:
         return 'Unintended' if self.unintended_connection else ''
     
-    def get_download(self):
+    def get_download(self) -> int:
         return self.data_downloaded
 
-    def get_upload(self):
+    def get_upload(self) -> int:
         return self.data_uploaded
     
-    def print_dns(self):
+    def print_dns(self) -> str:
         return self.app_layer if self.app_layer else ''
 
-    def is_dns(self):
+    def is_dns(self) -> bool:
         return True if self.app_layer else False
 
     def __str__(self):
         r_avg, t_avg = self.get_average_timestamps()
         return f'{self.ip_packet}, {self.s_port}->{self.d_port}, TCP:{self.protocol}, {self.print_dns()} Download: {self.data_downloaded}, Upload: {self.data_uploaded}, {self.is_unintended()} Avg Rec/Tra gap: {r_avg}/{t_avg}ms'
 
-# Store UDP Datagram info
 class UDPDatagram:
+    '''
+    Store UDP Datagram info
+    '''
     s_port = ''
     d_port = ''
     ip_packet = None
@@ -310,13 +288,13 @@ class UDPDatagram:
                 self.transmission_timestamps.append(float(raw_data.time))
                 self.uploaded += getattr(udp_data, 'len') - 8
     
-    def get_download(self):
+    def get_download(self) -> int:
         return self.downloaded
 
-    def get_upload(self):
+    def get_upload(self) -> int:
         return self.uploaded
 
-    def get_average_timestamps(self):
+    def get_average_timestamps(self) -> tuple:
         r_avg, t_avg = (0.0, 0.0)
         for r_time, t_time in zip_longest(self.reception_timestamps, self.transmission_timestamps):
             r_avg += r_time if r_time else 0
@@ -327,10 +305,14 @@ class UDPDatagram:
         t_avg = datetime.datetime.fromtimestamp(t_avg).microsecond/1000
         return (r_avg, t_avg)
 
-    def is_dns(self):
+    def is_dns(self) -> bool:
         return True if self.app_layer else False
 
-    def dns_or_download(self):
+    def dns_or_download(self) -> str:
+        '''
+        If it has UDP data then UDP related info will be printed
+        Else upload/download will be printed
+        '''
         if self.app_layer:
             return f'{self.app_layer}'
         else:
@@ -341,10 +323,13 @@ class UDPDatagram:
         return f'{self.ip_packet} {self.s_port}->{self.d_port}, UDP:{self.protocol} {self.dns_or_download()}, Avg Rec/Tra Gap: {r_avg}/{t_avg}'
 
 class DNS:
+    '''
+    To store DNS related info
+    '''
     record_type = None
     query_response_time = None
     query_initiated = None
-    domain_name = ''
+    domain_name = '' # It is not necessary for this to be a domain name, consider it as query
     ip_address = None # It is not necessary for this to be IP, consider it to be a response
 
     def __init__(self, raw_data):
@@ -367,6 +352,7 @@ class DNS:
                     if type(response) == bytes:
                         response = response.decode('utf-8')
                     self.ip_address = response 
+                    # E.g. google.com. => ['google', 'com', '']
                     if response.split('.')[-1] == '' and self.record_type in ['A', 'AAAA']:
                         self.record_type = 'CNAME'
                 if self.query_initiated:
@@ -377,159 +363,3 @@ class DNS:
 
     def __str__(self):
         return f'{self.domain_name}->{self.ip_address}, {self.record_type} in {self.query_response_time}ms'
-        
-def get_addr_from_socket(socket):
-    if len(socket.split(':')) > 1 and len(socket.split(':')) < 5:
-        return socket.split(':')[0]
-    else:
-        return socket.split(';')[0]
-
-def init_tcp_agg_dict():
-    return {
-        'type': 'TCP',
-        's/d': (None, None),
-        'uploaded': 0,
-        'downloaded': 0,
-        'unintended': 0,
-        'avg_rec': 0.0,  # Might get rid of this and below
-        'avg_trans': 0.0,
-        'connections': 0,
-    }
-
-def init_udp_agg_dict():
-    return {
-        'type': 'UDP',
-        's/d': (None, None),
-        'uploaded': 0,
-        'downloaded': 0,
-        'avg_rec': 0.0,
-        'avg_trans': 0.0,
-        'connections': 0,
-    }
-
-def init_dns_agg_dict():
-    return {
-        'type': 'DNS',
-        'avg_response_time': 0.0,
-        'queries_resolved': 0,
-        'total_queries': 0,
-    }
-
-def init_icmp_agg_dict():
-    return {
-        'type': 'ICMP',
-        's/d': (None, None),
-        'total_packets': 0,
-        'avg_ping': 0.0,
-        'connections': 0,
-    }
-
-def init_invalid_agg_dict():
-    return {
-        'type': 'INVALID'
-    }
-
-def analyzer(core_structure):
-    aggregated_dict = {}
-    core_dict = core_structure._core_dict
-    for key in core_dict:
-        current_core_obj = core_dict[key]
-        s_socket, d_socket = key
-        d_addr = get_addr_from_socket(d_socket)
-        s_addr = get_addr_from_socket(s_socket)
-        is_dns = False
-        if isinstance(current_core_obj, UDPDatagram) or isinstance(current_core_obj, TCPSegment):
-            is_dns = current_core_obj.is_dns()
-        # (1.1.1.1, 8.8.8.8) => (1.1.1.1;t/u/d/i/n, 8.8.8.8;t/u/d/i/n)
-        _key = ''
-        if (isinstance(current_core_obj, TCPSegment) or isinstance(current_core_obj, UDPDatagram)) and not is_dns:
-            if isinstance(current_core_obj, TCPSegment):
-                _key = (f'{s_addr};t', f'{d_addr};t')
-                current_agg_obj = aggregated_dict[_key] if _key in aggregated_dict else init_tcp_agg_dict()
-                current_agg_obj['s/d'] = (s_addr, d_addr)
-            else:
-                _key = (f'{s_addr};u', f'{d_addr};u')
-                current_agg_obj = aggregated_dict[_key] if _key in aggregated_dict else init_udp_agg_dict()
-                current_agg_obj['s/d'] = (s_addr, d_addr)
-            current_agg_obj['uploaded'] += current_core_obj.get_upload()
-            current_agg_obj['downloaded'] += current_core_obj.get_download()
-            if isinstance(current_core_obj, TCPSegment):
-                current_agg_obj['unintended'] += 1 if current_core_obj.is_unintended() != '' else 0
-            avg_rec, avg_trans = current_core_obj.get_average_timestamps()
-            current_agg_obj['avg_rec'] += avg_rec
-            current_agg_obj['avg_trans'] += avg_trans
-            current_agg_obj['connections'] += 1
-        elif is_dns:
-            # For DNS we will aggregate only on the basis of DNS server
-            _key = (f'{d_addr};d')
-            current_agg_obj = aggregated_dict[_key] if _key in aggregated_dict else init_dns_agg_dict()
-            current_agg_obj['total_queries'] += 1
-            current_core_obj = current_core_obj.app_layer
-            if current_core_obj.ip_address:
-                current_agg_obj['queries_resolved'] += 1
-                current_agg_obj['avg_response_time'] += current_core_obj.query_response_time
-        elif isinstance(current_core_obj, ICMP):
-            _key = (f'{s_addr};i', f'{d_addr};i')
-            current_agg_obj = aggregated_dict[_key] if _key in aggregated_dict else init_icmp_agg_dict()
-            current_agg_obj['s/d'] = (s_addr, d_addr)
-            current_agg_obj['total_packets'] += len(current_core_obj.response_timestamps)
-            current_agg_obj['avg_ping'] += current_core_obj.avg_response_time()
-            current_agg_obj['connections'] += 1
-        else:
-            _key = (f'{s_addr};n', f'{d_addr};n')
-            current_agg_obj = aggregated_dict[_key] if _key in aggregated_dict else init_invalid_agg_dict()
-            current_agg_obj['s/d'] = (s_addr, d_addr)
-        aggregated_dict[_key] = current_agg_obj
-    
-    # Aggregated Dictionary has been built now
-    # Final step is to decide NMAP attack?, DoS Attack?, calculate averages
-
-    TCP_DOS_UPLOADS = 1000
-    TCP_UNINTENDED_CONNECTIONS = 0.7
-
-    for key in aggregated_dict:
-        current_agg_obj = aggregated_dict[key]
-        
-        if current_agg_obj['type'] == 'TCP':
-            # Calculating the averages
-            current_agg_obj['avg_rec'] = current_agg_obj['avg_rec'] / current_agg_obj['connections']
-            current_agg_obj['avg_trans'] = current_agg_obj['avg_trans'] / current_agg_obj['connections']
-
-            # Upload is more spread out 
-            if current_agg_obj['uploaded'] / current_agg_obj['connections'] / TCP_DOS_UPLOADS > 0.8:
-                # DoS
-                current_agg_obj['is_dos'] = True
-                
-            # Connection based comparison
-            if current_agg_obj['connections'] > 10000 and (current_agg_obj['downloaded'] < 1000 and current_agg_obj['uploaded'] < 1000):
-                # DoS
-                current_agg_obj['is_dos'] = True
-
-            if current_agg_obj['unintended'] / current_agg_obj['connections'] > TCP_UNINTENDED_CONNECTIONS:
-                # NMAP
-                current_agg_obj['is_nmap'] = True
-
-        elif current_agg_obj['type'] == 'UDP':
-            # Calculating averages
-            current_agg_obj['avg_rec'] = current_agg_obj['avg_rec'] / current_agg_obj['connections']
-            current_agg_obj['avg_trans'] = current_agg_obj['avg_trans'] / current_agg_obj['connections']
-
-            if current_agg_obj['uploaded'] > 10000 and current_agg_obj['avg_rec'] == 0.0:
-                # Maybe UDP based DoS
-                current_agg_obj['is_dos'] = True
-        
-        elif current_agg_obj['type'] == 'DNS':
-            current_agg_obj['avg_response_time'] = current_agg_obj['avg_response_time'] / current_agg_obj['queries_resolved']
-
-        elif current_agg_obj['type'] == 'ICMP':
-            # Calculating average
-            current_agg_obj['avg_ping'] = current_agg_obj['avg_ping'] / current_agg_obj['connections']
-
-            # Maybe ICMP based attack or just sus 😳❗ behaviour
-            if current_agg_obj['total_packets'] > 20:
-                # Sus behaviour
-                current_agg_obj['sus'] = True
-        else:
-            continue 
-
-    return aggregated_dict

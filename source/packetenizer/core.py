@@ -1,5 +1,5 @@
 from .helper import module
-
+from scapy.plist import PacketList
 class CoreStructure:
     '''
     This is the root of all class where the core
@@ -8,16 +8,14 @@ class CoreStructure:
     _core_dict = dict()
     _packets = None
 
-    def __init__(self, scapy_packets):
+    def __init__(self, scapy_packets: PacketList):
         '''
-        __init__(scapy_packets: scapy.plist.PacketList) -> void
         It expects a scapy parsed dump file
         '''
         self._packets = scapy_packets
 
     def start(self):
         '''
-        start() -> void
         This function begins the actual analysis of scapy parsed file
         '''
         for packet in self._packets:
