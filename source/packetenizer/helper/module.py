@@ -67,6 +67,12 @@ class Invalid:
     def update(self, raw_data, swap=True):
         return
 
+    def serialize(self) -> dict:
+        return {
+            'layer2_protocol': self.l2_proto,
+            'layer3_protocol': self.l3_proto,
+        }
+
     def __str__(self):
         return f'UNKWOWN/INVALID: {self.l2_proto}, {self.l3_proto}'
 
@@ -103,6 +109,17 @@ class ICMP:
             else:
                 # New request
                 self.response_timestamps[seq_id] = [False, float(raw_data.time), 0.0, 0.0, 0]
+
+    def serialize(self) -> dict:
+        return {
+            'ip': self.ip_packet.serialize(),
+            'packet_type': self._type,
+            'id': self._id,
+            'total_requests': self.count_packets(),
+            'responded_requests': self.count_packets() - self.count_failed(),
+            'start_time': self.response_timestamps[1][1] if 1 in self.response_timestamps else None,
+            'average_ping': self.avg_response_time(),
+        }
 
     def avg_response_time(self):
         avg_res = 0.0
@@ -150,6 +167,13 @@ class IPPacket:
             self.protocol = 'IPv4'
         else:
             self.protocol = 'IPv6'
+
+    def serialize(self) -> dict:
+        return {
+            'source_address': self.s_ip_addr,
+            'destination_address': self.d_ip_addr,
+            'version': self.protocol
+        }
 
     def __str__(self):
         return f'{self.s_ip_addr}->{self.d_ip_addr}, {self.protocol}'
@@ -217,6 +241,24 @@ class TCPSegment:
                         self.client_ack = getattr(raw_data, 'ack')
                     self.data_downloaded += getattr(raw_data, 'ack') - self.client_ack
                     self.client_ack = getattr(raw_data, 'ack')
+
+    def serialize(self) -> dict:
+        if self.app_layer:
+            return self.app_layer.serialize('TCP', self.ip_packet, self.reception_timestamps[0] if len(self.reception_timestamps) > 0 else 0)
+        r_avg, t_avg = self.get_average_timestamps()
+        return {
+            'ip': self.ip_packet.serialize(),
+            's_port': self.s_port,
+            'd_port': self.d_port,
+            'download': self.data_downloaded,
+            'upload': self.data_uploaded,
+            'protocol': self.protocol,
+            'start_time': self.reception_timestamps[0] if len(self.reception_timestamps) > 0 else 0,
+            'avg_rec_time': r_avg,
+            'avg_trans_time': t_avg,
+            'unintended': self.unintended_connection,
+            'connection_finished': self.connection_finished,
+        }
 
     def get_average_timestamps(self) -> tuple:
         r_avg, t_avg = (0.0, 0.0)
@@ -288,6 +330,22 @@ class UDPDatagram:
                 self.transmission_timestamps.append(float(raw_data.time))
                 self.uploaded += getattr(udp_data, 'len') - 8
     
+    def serialize(self) -> dict:
+        if self.app_layer:
+            return self.app_layer.serialize('UDP', self.ip_packet, self.reception_timestamps[0] if len(self.reception_timestamps) > 0 else 0)
+        r_avg, t_avg = self.get_average_timestamps()
+        return {
+            'ip': self.ip_packet.serialize(),
+            's_port': self.s_port,
+            'd_port': self.d_port,
+            'download': self.downloaded,
+            'upload': self.uploaded,
+            'protocol': self.protocol,
+            'start_time': self.reception_timestamps[0] if len(self.reception_timestamps) > 0 else 0,
+            'avg_rec_time': r_avg,
+            'avg_trans_time': t_avg,
+        }
+
     def get_download(self) -> int:
         return self.downloaded
 
@@ -360,6 +418,17 @@ class DNS:
                     self.query_response_time = dt - self.query_initiated
                     dt = datetime.datetime.fromtimestamp(self.query_response_time)
                     self.query_response_time = dt.microsecond/1000
+
+    def serialize(self, transport_layer: str, ip_layer: IPPacket, start_ts: float) -> dict:
+        return {
+            'type': 'DNS',
+            'ip': ip_layer.serialize(),
+            'requested_domain': self.domain_name,
+            'response_ip': self.ip_address,
+            'record_type': self.record_type,
+            'response_time': self.query_response_time,
+            'start_time': start_ts,
+        }
 
     def __str__(self):
         return f'{self.domain_name}->{self.ip_address}, {self.record_type} in {self.query_response_time}ms'

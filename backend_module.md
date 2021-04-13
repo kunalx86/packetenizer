@@ -68,6 +68,7 @@
             'avg_trans_time',
             'unintended',
             'connection_finished',
+            'invisible',
         },
     ],
     // /api/udp
@@ -86,6 +87,7 @@
             'start_time',
             'avg_rec_time',
             'avg_trans_time',
+            'invisible',
         },
     ],
     // /api/dns
@@ -101,6 +103,7 @@
             'response_ip',
             'record_type',
             'response_time',
+            'invisible',
         },
     ],
     // /api/icmp
@@ -117,6 +120,7 @@
             'responded_resquests',
             'start_time',
             'average_ping',
+            'invisible',
         },
     ],
     // /api/invalid

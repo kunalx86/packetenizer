@@ -111,6 +111,7 @@ def analyze(core_structure: CoreStructure):
 
     TCP_DOS_UPLOADS = 1000
     TCP_UNINTENDED_CONNECTIONS = 0.7
+    problem_ips = []
 
     for key in aggregated_dict:
         current_agg_obj = aggregated_dict[key]
@@ -124,15 +125,18 @@ def analyze(core_structure: CoreStructure):
             # Upload is more spread out 
             if upload_connections_ratio > 0.8 and current_agg_obj['connections'] > 10:
                 # DoS
+                problem_ips.append(current_agg_obj['s/d'])
                 current_agg_obj['is_dos'] = True
                 
             # Connection based comparison
             if current_agg_obj['connections'] > 10000 and (current_agg_obj['downloaded'] < 1000 and current_agg_obj['uploaded'] < 1000):
                 # DoS
+                problem_ips.append(current_agg_obj['s/d'])
                 current_agg_obj['is_dos'] = True
 
             if current_agg_obj['unintended'] / current_agg_obj['connections'] > TCP_UNINTENDED_CONNECTIONS and current_agg_obj['connections'] > 10:
                 # NMAP
+                problem_ips.append(current_agg_obj['s/d'])
                 current_agg_obj['is_nmap'] = True
 
         elif current_agg_obj['type'] == 'UDP':
@@ -142,6 +146,7 @@ def analyze(core_structure: CoreStructure):
 
             if current_agg_obj['uploaded'] > 10000 and current_agg_obj['avg_rec'] == 0.0:
                 # Maybe UDP based DoS
+                problem_ips.append(current_agg_obj['s/d'])
                 current_agg_obj['is_dos'] = True
         
         elif current_agg_obj['type'] == 'DNS':
@@ -161,4 +166,4 @@ def analyze(core_structure: CoreStructure):
         else:
             continue 
 
-    return aggregated_dict
+    return aggregated_dict, problem_ips
