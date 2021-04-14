@@ -165,13 +165,22 @@ wirelen
 * packet.fields gives a list of fields that can be indexed to a dict. E.g. `{'length': None, 'id': 45501, 'qr': 0, 'opcode': 0, 'aa': 0, 'tc': 0, 'rd': 1, 'ra': 0, 'z': 0, 'ad': 0, 'cd': 0, 'rcode': 0, 'qdcount': 1, 'ancount': 0, 'nscount': 0, 'arcount': 0, 'qd': <DNSQR  qname='registry.npmjs.org.' qtype=A qclass=IN |>, 'an': None, 'ns': None, 'ar': None} for a DNS query`.
 * In order to get access to value of a field following can be done. E.g. `getattr(tcp_packet, 'dport') => 443`.
 ## E.g. Code
-`
+```
 f = rdpcap("./download.pcap")
 for packet in f:
     if packet.getlayer(2).name == 'TCP':
         tcp_packet = packet['TCP']
         if getattr(tcp_packet, 'dport') == 443:
             print(getattr(tcp_packet,'seq'), getattr(tcp_packet, 'ack'))
-`
+```
 ** The above will print sequence number (raw) and acknowledgement number (raw) for tcp segments whose destination port is 443 (HTTPS).
 
+## DNS Stuff 
+```
+dns_query = packet['DNS']  
+DNS Query  
+length:None, id:30144, qr:0, opcode:0, aa:0, tc:0, rd:1, ra:0, z:0, ad:0, cd:0, rcode:0, qdcount:1, ancount:0, nscount:0, arcount:0, qd:b'\x03www\x06netbsd\x03org\x00\x00\x01\x00\x01', an:None, ns:None, ar:None  
+dns_response = packet['DNS']  
+DNS Response
+length:None, id:30144, qr:1, opcode:0, aa:0, tc:0, rd:1, ra:1, z:0, ad:0, cd:0, rcode:0, qdcount:1, ancount:1, nscount:0, arcount:0, qd:b'\x03www\x06netbsd\x03org\x00\x00\x01\x00\x01', an:b'\x03www\x06netbsd\x03org\x00\x00\x01\x00\x01\x00\x01@\xef\x00\x04\xcc\x98\xbe\x0c', ns:None, ar:None  
+```
