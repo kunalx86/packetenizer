@@ -2,8 +2,8 @@
 
 ## Python version 3.9.1
 
-## Core Module (core_module)
-- This is the core_module although placement of files is bound to change
+## Core Module (packetenizer)
+- This is the core module although placement of files is bound to change
 - Helper (helper) contains the other important classes
 
 ### Note: Commands to be run inside source directory unless stated otherwise
