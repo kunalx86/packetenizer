@@ -88,6 +88,7 @@ def analyze(core_structure: CoreStructure):
             _key = (f'{d_addr};d')
             current_agg_obj = aggregated_dict[_key] if _key in aggregated_dict else init_dns_agg_dict()
             current_agg_obj['total_queries'] += 1
+            current_agg_obj['server'] = d_addr
             current_core_obj = current_core_obj.app_layer
             if current_core_obj.ip_address:
                 current_agg_obj['queries_resolved'] += 1

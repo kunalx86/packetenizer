@@ -54,17 +54,17 @@ class CoreStructure:
             if 'ip' in connection_serialized_dict:
                 connection_serialized_dict['invisible'] = compare_ips(problem_ips, connection_serialized_dict['ip'])
 
-            if isinstance(connection, module.TCPSegment):
+            if 'type' in connection_serialized_dict:
+                connection_serialized_dict.pop('type', None)
+                serialized_dict['dns'].append(connection_serialized_dict)
+            elif isinstance(connection, module.TCPSegment):
                 serialized_dict['tcp'].append(connection_serialized_dict)
-            elif isinstance(connection, module.UDPDatagram):
-                serialized_dict['udp'].append(connection_serialized_dict)
             elif isinstance(connection, module.ICMP):
                 serialized_dict['icmp'].append(connection_serialized_dict)
             elif isinstance(connection, module.Invalid):
                 serialized_dict['invalid'].append(connection_serialized_dict)
-            elif connection_serialized_dict['type'] == 'DNS':
-                connection_serialized_dict.pop('type', None)
-                serialized_dict['dns'].append(connection_serialized_dict)
+            elif isinstance(connection, module.UDPDatagram):
+                serialized_dict['udp'].append(connection_serialized_dict)
 
         for agg_con in analyze.values():
             serialized_dict['analyze'].append(agg_con)

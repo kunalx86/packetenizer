@@ -103,6 +103,7 @@
             'response_ip',
             'record_type',
             'response_time',
+            'server'
             'invisible',
         },
     ],

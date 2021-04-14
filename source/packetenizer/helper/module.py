@@ -117,7 +117,7 @@ class ICMP:
             'id': self._id,
             'total_requests': self.count_packets(),
             'responded_requests': self.count_packets() - self.count_failed(),
-            'start_time': self.response_timestamps[1][1] if 1 in self.response_timestamps else None,
+            'start_time': str(datetime.datetime.fromtimestamp(self.response_timestamps[1][1])) if 1 in self.response_timestamps else None,
             'average_ping': self.avg_response_time(),
         }
 
@@ -244,7 +244,7 @@ class TCPSegment:
 
     def serialize(self) -> dict:
         if self.app_layer:
-            return self.app_layer.serialize('TCP', self.ip_packet, self.reception_timestamps[0] if len(self.reception_timestamps) > 0 else 0)
+            return self.app_layer.serialize('TCP', self.ip_packet)
         r_avg, t_avg = self.get_average_timestamps()
         return {
             'ip': self.ip_packet.serialize(),
@@ -253,7 +253,7 @@ class TCPSegment:
             'download': self.data_downloaded,
             'upload': self.data_uploaded,
             'protocol': self.protocol,
-            'start_time': self.reception_timestamps[0] if len(self.reception_timestamps) > 0 else 0,
+            'start_time': str(datetime.datetime.fromtimestamp(self.transmission_timestamps[0])) if len(self.transmission_timestamps) > 0 else 0,
             'avg_rec_time': r_avg,
             'avg_trans_time': t_avg,
             'unintended': self.unintended_connection,
@@ -332,7 +332,7 @@ class UDPDatagram:
     
     def serialize(self) -> dict:
         if self.app_layer:
-            return self.app_layer.serialize('UDP', self.ip_packet, self.reception_timestamps[0] if len(self.reception_timestamps) > 0 else 0)
+            return self.app_layer.serialize('UDP', self.ip_packet)
         r_avg, t_avg = self.get_average_timestamps()
         return {
             'ip': self.ip_packet.serialize(),
@@ -341,7 +341,7 @@ class UDPDatagram:
             'download': self.downloaded,
             'upload': self.uploaded,
             'protocol': self.protocol,
-            'start_time': self.reception_timestamps[0] if len(self.reception_timestamps) > 0 else 0,
+            'start_time': str(datetime.datetime.fromtimestamp(self.transmission_timestamps[0])) if len(self.transmission_timestamps) > 0 else 0,
             'avg_rec_time': r_avg,
             'avg_trans_time': t_avg,
         }
@@ -419,7 +419,7 @@ class DNS:
                     dt = datetime.datetime.fromtimestamp(self.query_response_time)
                     self.query_response_time = dt.microsecond/1000
 
-    def serialize(self, transport_layer: str, ip_layer: IPPacket, start_ts: float) -> dict:
+    def serialize(self, transport_layer: str, ip_layer: IPPacket) -> dict:
         return {
             'type': 'DNS',
             'ip': ip_layer.serialize(),
@@ -427,7 +427,7 @@ class DNS:
             'response_ip': self.ip_address,
             'record_type': self.record_type,
             'response_time': self.query_response_time,
-            'start_time': start_ts,
+            'start_time': str(datetime.datetime.fromtimestamp(self.query_initiated)) if self.query_initiated > 0 else 0,
         }
 
     def __str__(self):
