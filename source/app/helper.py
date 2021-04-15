@@ -11,7 +11,6 @@ def allowed_file(filename: str):
 
 def manage_file_parse(dump_file):
     if dump_file and not allowed_file(dump_file.filename):
-        print(session)
         return "File extension not supported!", False
     return_value, status = parse_and_analyze(dump_file)
     if not status:

@@ -46,7 +46,13 @@ class CoreStructure:
             'icmp': [],
             'dns': [],
             'invalid': [],
-            'analyze': [],
+            'analyze': {
+                'tcp': [],
+                'udp': [],
+                'dns': [],
+                'icmp': [],
+                'invalid': [],
+            },
         }
 
         for connection in self._core_dict.values():
@@ -67,7 +73,12 @@ class CoreStructure:
                 serialized_dict['udp'].append(connection_serialized_dict)
 
         for agg_con in analyze.values():
-            serialized_dict['analyze'].append(agg_con)
+            if agg_con['type'] != 'DNS':
+                s_addr, d_addr = agg_con['s/d']
+                agg_con.pop('s/d', None)
+                agg_con['source_address'] = s_addr
+                agg_con['destination_address'] = d_addr
+            serialized_dict['analyze'][agg_con['type'].lower()].append(agg_con)
 
         return serialized_dict
 

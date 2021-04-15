@@ -7,8 +7,9 @@ from .helper import serialized_dict_storage, manage_file_parse
 @app.route('/')
 def index():
     session_present = False
-    if 'id' in session:
-       session_present = True 
+    # Necessary because cookies will stay in browser even if server is restarted, but the dictionary will be empty
+    if 'id' in session and session['id'] in serialized_dict_storage: 
+        session_present = True 
     return render_template('index.html', session_present=session_present)
 
 @app.route('/file', methods=['POST'])
@@ -24,7 +25,6 @@ def file_upload():
         return redirect('/')
     return_value, status = manage_file_parse(dump_file)
     if status == False:
-        print('here')
         flash(return_value)
         return redirect('/')
     return redirect('/dashboard')
@@ -35,4 +35,14 @@ def dashboard():
         flash("Session not set. Please upload file")
         return redirect('/')
     data = serialized_dict_storage[session['id']]
-    return render_template('dashboard.html', data=data)
+    return render_template('dashboard.html', data=data, session_id=session['id'])
+
+@app.route('/share/<session_id>')
+def share_session(session_id):
+    if int(session_id) in serialized_dict_storage:
+        session['id'] = int(session_id)
+        print(session)
+        return redirect('/dashboard')
+    else:
+        flash("Not a valid share url")
+        return redirect('/')
