@@ -41,7 +41,6 @@ def dashboard():
 def share_session(session_id):
     if int(session_id) in serialized_dict_storage:
         session['id'] = int(session_id)
-        print(session)
         return redirect('/dashboard')
     else:
         flash("Not a valid share url")
