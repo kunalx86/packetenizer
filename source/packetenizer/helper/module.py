@@ -267,8 +267,8 @@ class TCPSegment:
             t_avg += t_time if t_time else 0
         r_avg = r_avg / len(self.reception_timestamps) if len(self.reception_timestamps) != 0 else -1
         t_avg = t_avg / len(self.transmission_timestamps) if len(self.transmission_timestamps) != 0 else -1
-        r_avg = datetime.datetime.fromtimestamp(r_avg).microsecond/1000
-        t_avg = datetime.datetime.fromtimestamp(t_avg).microsecond/1000
+        r_avg = datetime.datetime.utcfromtimestamp(r_avg).microsecond/1000
+        t_avg = datetime.datetime.utcfromtimestamp(t_avg).microsecond/1000
         return (r_avg, t_avg)
 
     def is_unintended(self) -> str:
@@ -359,8 +359,8 @@ class UDPDatagram:
             t_avg += t_time if t_time else 0
         r_avg = r_avg / len(self.reception_timestamps) if len(self.reception_timestamps) != 0 else -1
         t_avg = t_avg / len(self.transmission_timestamps) if len(self.transmission_timestamps) != 0 else -1
-        r_avg = datetime.datetime.fromtimestamp(r_avg).microsecond/1000
-        t_avg = datetime.datetime.fromtimestamp(t_avg).microsecond/1000
+        r_avg = datetime.datetime.utcfromtimestamp(r_avg).microsecond/1000
+        t_avg = datetime.datetime.utcfromtimestamp(t_avg).microsecond/1000
         return (r_avg, t_avg)
 
     def is_dns(self) -> bool:
