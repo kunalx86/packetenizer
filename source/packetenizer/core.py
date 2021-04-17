@@ -29,15 +29,18 @@ class CoreStructure:
                 # print('Ughh.. Problem')
                 # print(module.debug_packet(packet))
             else:
-                if not (s_socket, d_socket) in self._core_dict:
-                    if not (d_socket, s_socket) in self._core_dict:
-                        # The connection doesn't exist create a new one
-                        self._core_dict[(s_socket, d_socket)] = module.create_connection(packet)
+                try:
+                    if not (s_socket, d_socket) in self._core_dict:
+                        if not (d_socket, s_socket) in self._core_dict:
+                            # The connection doesn't exist create a new one
+                            self._core_dict[(s_socket, d_socket)] = module.create_connection(packet)
+                        else:
+                            # The connection does exist just set the swap=true
+                            self._core_dict[(d_socket, s_socket)].update(packet, swap=True)
                     else:
-                        # The connection does exist just set the swap=true
-                        self._core_dict[(d_socket, s_socket)].update(packet, swap=True)
-                else:
-                    self._core_dict[(s_socket, d_socket)].update(packet)
+                        self._core_dict[(s_socket, d_socket)].update(packet)
+                except:
+                    continue
     
     def serialize(self, analyze: dict, problem_ips: list):
         serialized_dict = {
