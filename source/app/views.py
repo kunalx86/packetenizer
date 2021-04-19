@@ -35,11 +35,12 @@ def dashboard():
         flash("Session not set. Please upload file")
         return redirect('/')
     data = serialized_dict_storage[session['id']]
-    return render_template('dashboard.html', data=data, session_id=session['id'])
+    return render_template('dashboard/dashboard.html', data=data, session_id=session['id'])
 
 @app.route('/share/<session_id>')
 def share_session(session_id):
     if int(session_id) in serialized_dict_storage:
+        session.permanent = False
         session['id'] = int(session_id)
         return redirect('/dashboard')
     else:

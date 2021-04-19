@@ -1,7 +1,7 @@
 from flask import Flask
-from config import DevelopmentConfig
+from app.config import Config
 
 app = Flask(__name__)
-app.config.from_object(DevelopmentConfig())
+app.config.from_object(Config)
 
 from app import views
