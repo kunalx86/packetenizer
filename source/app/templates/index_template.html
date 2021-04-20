@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Packetenizer</title>
+</head>
+<body>
+    Hello, this is Packetenizer web app
+
+    <p>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <h3>{{ message }}</h3>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form action="/file" enctype="multipart/form-data" method="POST">
+            <input type="file" name="dump-file" id="dump-file" />
+            <input type="submit" value="Submit" />
+        </form>
+        {% if session_present %}
+            <p>Session present <a href="/dashboard">Go to dashboard?</a></p>
+        {% endif %}
+    </p>
+</body>
+</html>
