@@ -1,14 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <link rel="shortcut icon" href="/static/images/Packekenizer.ico" type="image/x-icon">
+    <title>{% block title %} {% endblock %} - Dashboard</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
+    <link rel="stylesheet" href="/static/fonts/fontawesome-all.min.css">
+    <link rel="stylesheet" href="/static/fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/fonts/fontawesome5-overrides.min.css">
 </head>
-<body>
-   <h1>Dashboard</h1>
-   <p>Share URL:<a href="/share/{{session_id}}">Click here</a></p>
-   {{ data }}
+
+<body id="page-top">
+    <div id="wrapper">
+        <nav class="navbar navbar-dark align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0">
+            <div class="container-fluid d-flex flex-column p-0">
+                <div class="sidebar-brand-icon">
+                    <image src="/static/images/Packetenizer_1.png" height="100px" width="100px"></image>
+                </div>
+                <a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="#">
+                    <div class="sidebar-brand-text mx-3"><span>Packetenizer</span></div>
+                </a>
+                <hr class="sidebar-divider my-0">
+                <ul class="navbar-nav text-light" id="accordionSidebar">
+                    <li id="nav-item-1" class="nav-item"><a class="nav-link" href="/dashboard/home"><i class="fas fa-home"></i><span>Homepage</span></a></li>
+                    <li id="nav-item-2" class="nav-item"><a class="nav-link" href="/dashboard/analysis"><i class="fas fa-chart-line"></i><span>Analysis</span></a></li>
+                    <li id="nav-item-3" class="nav-item"><a class="nav-link" href="/dashboard/tcp"><i class="fas fa-tachometer-alt"></i><span>TCP Details</span></a></li>
+                    <li id="nav-item-4" class="nav-item"><a class="nav-link" href="/dashboard/udp"><i class="fas fa-tachometer-alt"></i><span>UDP Details</span></a></li>
+                    <li id="nav-item-5" class="nav-item"><a class="nav-link" href="/dashboard/icmp"><i class="fas fa-tachometer-alt"></i><span>ICMP Details</span></a></li>
+                    <li id="nav-item-6" class="nav-item"><a class="nav-link" href="/dashboard/dns"><i class="fas fa-tachometer-alt"></i><span>DNS Details</span></a></li>
+                    <li id="nav-item-7" class="nav-item"><a class="nav-link" href="/dashboard/table"><i class="fas fa-table"></i><span>Connection Details</span></a></li>
+                </ul>
+                <div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"><i class="fas fa-exchange-alt fa-sm text-white-50"></i></button></div>
+            </div>
+        </nav>
+        <div class="d-flex flex-column" id="content-wrapper">
+            <!-- Custom blocks go here -->
+            {% block content %} {% endblock %}
+            <footer class="bg-white sticky-footer">
+                <div class="container my-auto">
+                    <div class="text-center my-auto copyright"><span>Copyright © Packetenizer 2021</span></div>
+                </div>
+            </footer>
+        </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
+    </div>
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/chart.min.js"></script>
+    <script src="/static/js/bs-init.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
+    <script src="/static/js/theme.js"></script>
+    <script type="text/javascript">
+        const navItem = document.getElementById("nav-item-{{nav_item}}");
+        navItem.classList.add("active")
+    </script>
 </body>
+
 </html>

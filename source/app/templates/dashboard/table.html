@@ -1,232 +1,92 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <link rel="shortcut icon" href="assets/img/Packekenizer.ico" type="image/x-icon">
-    <title>Connection Details</title>
-    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
-    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
-    <link rel="stylesheet" href="assets/fonts/font-awesome.min.css">
-    <link rel="stylesheet" href="assets/fonts/fontawesome5-overrides.min.css">
-</head>
-
-<body id="page-top">
-    <div id="wrapper">
-        <nav class="navbar navbar-dark align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0">
-            <div class="container-fluid d-flex flex-column p-0">
-                <div class="sidebar-brand-icon">
-                    <image src="\assets\img\Packetenizer_1.png" height="100px" width="100px"></image>
+{% extends "dashboard/dashboard.html" %}
+{% block title %}
+Connection Details
+{% endblock %}
+{% block content %}
+   <div id="content">
+        <div class="container-fluid">
+            <h3 class="text-dark mb-4">Connection Details</h3>
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <p class="text-primary m-0 font-weight-bold">Connection Details Table</p>
                 </div>
-                <a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="#">
-                    <!-- <div class="sidebar-brand-icon rotate-n-15"><i class="fas fa-laugh-wink"></i></div> -->
-                    <div class="sidebar-brand-text mx-3"><span>Packetenizer</span></div>
-                </a>
-                <hr class="sidebar-divider my-0">
-                <ul class="navbar-nav text-light" id="accordionSidebar">
-                    <li class="nav-item"><a class="nav-link" href="Homepage.html"><i class="fas fa-home"></i><span>Homepage</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="Analysis.html"><i class="fas fa-chart-line"></i><span>Analysis</span></a></li>
-                    <li class="nav-item"><a class="nav-link " href="TCP_details.html"><i class="fas fa-tachometer-alt"></i><span>TCP Dashboard</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="UDP_details.html"><i class="fas fa-tachometer-alt"></i><span>UDP Dashboard</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="ICMP_details.html"><i class="fas fa-tachometer-alt"></i><span>ICMP Dashboard</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="DNS_details.html"><i class="fas fa-tachometer-alt"></i><span>DNS Dashboard</span></a></li>
-                    <li class="nav-item"><a class="nav-link active" href="table.html"><i class="fas fa-table"></i><span>Connection Details</span></a></li>
-                </ul>
-                <div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"><i class="fas fa-exchange-alt fa-sm text-white-50"></i></button></div>
-            </div>
-        </nav>
-        <div class="d-flex flex-column" id="content-wrapper">
-            <div id="content">
-
-                <div class="container-fluid">
-                    <h3 class="text-dark mb-4">Connection Details</h3>
-                    <div class="card shadow">
-                        <div class="card-header py-3">
-                            <p class="text-primary m-0 font-weight-bold">Connection Details Table</p>
-                        </div>
-                        <div class="card-body">
-                            <!-- <div class="row">
-                                <div class="col-md-6 text-nowrap">
-                                    <div id="dataTable_length" class="dataTables_length" aria-controls="dataTable"><label>Show&nbsp;<select class="form-control form-control-sm custom-select custom-select-sm">
-                                                <option value="10" selected="">10</option>
-                                                <option value="25">25</option>
-                                                <option value="50">50</option>
-                                                <option value="100">100</option>
-                                            </select>&nbsp;</label></div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="text-md-right dataTables_filter" id="dataTable_filter"><label><input type="search" class="form-control form-control-sm" aria-controls="dataTable" placeholder="Search"></label></div>
-                                </div>
-                            </div> -->
-                            <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
-                                <table class="table my-0" id="dataTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Type</th>
-                                            <th>Source Address</th>
-                                            <th>Destination Address</th>
-                                            <th>DOS Attack Identified</th>
-                                            <th>NMAP Scan Identified</th>
-                                            <th>Connections</th>
-                                            <th>Unintended Connections</th>
-                                            <th>Average Reception Time</th>
-                                            <th>Average Transmission Time</th>
-                                            <th>Data Uploaded</th>
-                                            <th>Data Downloaded</th>
-
-
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <!-- <td><img class="rounded-circle mr-2" width="30" height="30" src="assets/img/avatars/avatar1.jpeg">Airi Satou</td> -->
-                                            <td>TCP</td>
-                                            <td>192.168.0.104</td>
-                                            <td>52.216.164.19</td>
-                                            <td>No</td>
-                                            <td>No</td>
-                                            <td>75</td>
-                                            <td>5</td>
-                                            <td>563.884ms</td>
-                                            <td>880.33ms</td>
-                                            <td>1769 B</td>
-                                            <td>10620999 B</td>
-                                        </tr>
-                                        <tr>
-                                            <td>TCP</td>
-                                            <td>192.168.0.104</td>
-                                            <td>52.216.164.19</td>
-                                            <td>No</td>
-                                            <td>No</td>
-                                            <td>75</td>
-                                            <td>5</td>
-                                            <td>563.884ms</td>
-                                            <td>880.33ms</td>
-                                            <td>1769 B</td>
-                                            <td>10620999 B</td>
-                                        </tr>
-                                        <tr>
-                                            <td>UDP</td>
-                                            <td>192.168.0.25 </td>
-                                            <td>52.114.4.49</td>
-                                            <td>No</td>
-                                            <td>No</td>
-                                            <td>100</td>
-                                            <td>15</td>
-                                            <td>987.233ms</td>
-                                            <td>195.935ms</td>
-                                            <td>1095052 B</td>
-                                            <td>423408 B</td>
-                                        </tr>
-                                        <tr>
-                                            <td>UDP</td>
-                                            <td>192.168.0.25 </td>
-                                            <td>52.114.4.49</td>
-                                            <td>No</td>
-                                            <td>No</td>
-                                            <td>100</td>
-                                            <td>15</td>
-                                            <td>987.233ms</td>
-                                            <td>195.935ms</td>
-                                            <td>1095052 B</td>
-                                            <td>423408 B</td>
-                                        </tr>
-                                        <!-- <tr>
-                                            <td><img class="rounded-circle mr-2" width="30" height="30" src="assets/img/avatars/avatar5.jpeg">Brenden Wagner</td>
-                                            <td>Software Engineer</td>
-                                            <td>San Francisco</td>
-                                            <td>28</td>
-                                            <td>2011/06/07<br></td>
-                                            <td>$206,850</td>
-                                        </tr>
-                                        <tr>
-                                            <td><img class="rounded-circle mr-2" width="30" height="30" src="assets/img/avatars/avatar1.jpeg">Brielle Williamson</td>
-                                            <td>Integration Specialist</td>
-                                            <td>New York</td>
-                                            <td>61</td>
-                                            <td>2012/12/02<br></td>
-                                            <td>$372,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td><img class="rounded-circle mr-2" width="30" height="30" src="assets/img/avatars/avatar2.jpeg">Bruno Nash<br></td>
-                                            <td>Software Engineer</td>
-                                            <td>London</td>
-                                            <td>38</td>
-                                            <td>2011/05/03<br></td>
-                                            <td>$163,500</td>
-                                        </tr>
-                                        <tr>
-                                            <td><img class="rounded-circle mr-2" width="30" height="30" src="assets/img/avatars/avatar3.jpeg">Caesar Vance</td>
-                                            <td>Pre-Sales Support</td>
-                                            <td>New York</td>
-                                            <td>21</td>
-                                            <td>2011/12/12<br></td>
-                                            <td>$106,450</td>
-                                        </tr>
-                                        <tr>
-                                            <td><img class="rounded-circle mr-2" width="30" height="30" src="assets/img/avatars/avatar4.jpeg">Cara Stevens</td>
-                                            <td>Sales Assistant</td>
-                                            <td>New York</td>
-                                            <td>46</td>
-                                            <td>2011/12/06<br></td>
-                                            <td>$145,600</td>
-                                        </tr>
-                                        <tr>
-                                            <td><img class="rounded-circle mr-2" width="30" height="30" src="assets/img/avatars/avatar5.jpeg">Cedric Kelly</td>
-                                            <td>Senior JavaScript Developer</td>
-                                            <td>Edinburgh</td>
-                                            <td>22</td>
-                                            <td>2012/03/29<br></td>
-                                            <td>$433,060</td> -->
-                                        </tr>
-                                    </tbody>
-                                    <!-- <tfoot>
-                                        <tr>
-                                            <td><strong>Name</strong></td>
-                                            <td><strong>Position</strong></td>
-                                            <td><strong>Office</strong></td>
-                                            <td><strong>Age</strong></td>
-                                            <td><strong>Start date</strong></td>
-                                            <td><strong>Salary</strong></td>
-                                        </tr>
-                                    </tfoot> -->
-                                </table>
-                            </div>
-                            <!-- <div class="row">
-                                <div class="col-md-6 align-self-center">
-                                    <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">Showing 1 to 10 of 27</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
-                                        <ul class="pagination">
-                                            <li class="page-item disabled"><a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">«</span></a></li>
-                                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                            <li class="page-item"><a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">»</span></a></li>
-                                        </ul>
-                                    </nav>
-                                </div>
-                            </div> -->
-                        </div>
+                <div class="card-body">
+                    <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
+                        <table class="table my-0" id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Source Address</th>
+                                    <th>Destination Address</th>
+                                    <th>DOS Attack Identified</th>
+                                    <th>NMAP Scan Identified</th>
+                                    <th>Connections</th>
+                                    <th>Unintended Connections</th>
+                                    <th>Average Reception Time</th>
+                                    <th>Average Transmission Time</th>
+                                    <th>Data Uploaded</th>
+                                    <th>Data Downloaded</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>TCP</td>
+                                    <td>192.168.0.104</td>
+                                    <td>52.216.164.19</td>
+                                    <td>No</td>
+                                    <td>No</td>
+                                    <td>75</td>
+                                    <td>5</td>
+                                    <td>563.884ms</td>
+                                    <td>880.33ms</td>
+                                    <td>1769 B</td>
+                                    <td>10620999 B</td>
+                                </tr>
+                                <tr>
+                                    <td>TCP</td>
+                                    <td>192.168.0.104</td>
+                                    <td>52.216.164.19</td>
+                                    <td>No</td>
+                                    <td>No</td>
+                                    <td>75</td>
+                                    <td>5</td>
+                                    <td>563.884ms</td>
+                                    <td>880.33ms</td>
+                                    <td>1769 B</td>
+                                    <td>10620999 B</td>
+                                </tr>
+                                <tr>
+                                    <td>UDP</td>
+                                    <td>192.168.0.25 </td>
+                                    <td>52.114.4.49</td>
+                                    <td>No</td>
+                                    <td>No</td>
+                                    <td>100</td>
+                                    <td>15</td>
+                                    <td>987.233ms</td>
+                                    <td>195.935ms</td>
+                                    <td>1095052 B</td>
+                                    <td>423408 B</td>
+                                </tr>
+                                <tr>
+                                    <td>UDP</td>
+                                    <td>192.168.0.25 </td>
+                                    <td>52.114.4.49</td>
+                                    <td>No</td>
+                                    <td>No</td>
+                                    <td>100</td>
+                                    <td>15</td>
+                                    <td>987.233ms</td>
+                                    <td>195.935ms</td>
+                                    <td>1095052 B</td>
+                                    <td>423408 B</td>
+                                </tr>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-            <footer class="bg-white sticky-footer">
-                <div class="container my-auto">
-                    <div class="text-center my-auto copyright"><span>Copyright © Packetenizer 2021</span></div>
-                </div>
-            </footer>
-        </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
+        </div>
     </div>
-    <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="assets/js/chart.min.js"></script>
-    <script src="assets/js/bs-init.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
-    <script src="assets/js/theme.js"></script>
-</body>
-
-</html>
+{% endblock %}
