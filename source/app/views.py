@@ -2,7 +2,7 @@ from app import app
 from flask import render_template, flash, request, redirect, session
 from packetenizer import parse_and_analyze
 from random import randint
-from .helper import serialized_dict_storage, manage_file_parse
+from .helper import serialized_dict_storage, manage_file_parse, test_session
 
 @app.route('/')
 def index():
@@ -29,44 +29,74 @@ def file_upload():
         return redirect('/')
     return redirect('/dashboard/home')
 
-@app.route('/dashboard/home')
+@app.route('/dashboard')
 def dashboard():
-    # if 'id' not in session or session['id'] not in serialized_dict_storage:
-        # flash("Session not set. Please upload file")
-        # return redirect('/')
-    # data = serialized_dict_storage[session['id']]
-    data = {}
+    return redirect('/dashboard/home')
+
+@app.route('/dashboard/home')
+def dashboard_home():
+    return_value, status = test_session()
+    if not status:
+        flash(return_value)
+        return redirect('/')
+    data = serialized_dict_storage[session['id']]['analyze']['counts']
     return render_template('dashboard/home.html', data=data, nav_item="1",session_id=session['id'])
 
 @app.route('/dashboard/tcp')
 def dashboard_tcp():
-    data = {}
-    return render_template('dashboard/tcp_details.html', nav_item="3",data=data)
+    return_value, status = test_session()
+    if not status:
+        flash(return_value)
+        return redirect('/')
+    data = serialized_dict_storage[session['id']]['tcp']
+    return render_template('dashboard/tcp_details.html', nav_item="3",data=data, session_id=session['id'])
 
 @app.route('/dashboard/udp')
 def dashboard_udp():
-    data = {}
-    return render_template('dashboard/udp_details.html', nav_item="4",data=data)
+    return_value, status = test_session()
+    if not status:
+        flash(return_value)
+        return redirect('/')
+    data = serialized_dict_storage[session['id']]['udp']
+    return render_template('dashboard/udp_details.html', nav_item="4",data=data, session_id=session['id'])
 
 @app.route('/dashboard/dns')
 def dashboard_dns():
-    data = {}
-    return render_template('dashboard/dns_details.html', nav_item="6",data=data)
+    return_value, status = test_session()
+    if not status:
+        flash(return_value)
+        return redirect('/')
+    data = serialized_dict_storage[session['id']]['dns']
+    return render_template('dashboard/dns_details.html', nav_item="6",data=data, session_id=session['id'])
 
 @app.route('/dashboard/icmp')
 def dashboard_icmp():
-    data = {}
-    return render_template('dashboard/icmp_details.html', nav_item="5",data=data)
+    return_value, status = test_session()
+    if not status:
+        flash(return_value)
+        return redirect('/')
+    data = serialized_dict_storage[session['id']]['icmp']
+    return render_template('dashboard/icmp_details.html', nav_item="5",data=data, session_id=session['id'])
 
 @app.route('/dashboard/analysis')
 def dashboard_analysis():
-    data = {}
-    return render_template('dashboard/analysis.html', nav_item="2",data=data)
+    return_value, status = test_session()
+    if not status:
+        flash(return_value)
+        return redirect('/')
+    data = serialized_dict_storage[session['id']]['analyze']
+    return render_template('dashboard/analysis.html', nav_item="2",data=data, session_id=session['id'])
 
 @app.route('/dashboard/table')
 def dashboard_table():
+    return_value, status = test_session()
+    if not status:
+        flash(return_value)
+        return redirect('/')
     data = {}
-    return render_template('dashboard/table.html', nav_item="7",data=data)
+    data['tcp'] = serialized_dict_storage[session['id']]['analyze']['tcp']
+    data['udp'] = serialized_dict_storage[session['id']]['analyze']['udp']
+    return render_template('dashboard/table.html', nav_item="7",data=data, session_id=session['id'])
 
 @app.route('/share/<session_id>')
 def share_session(session_id):
@@ -77,3 +107,7 @@ def share_session(session_id):
     else:
         flash("Not a valid share url")
         return redirect('/')
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html')

@@ -41,6 +41,8 @@
             {% block content %} {% endblock %}
             <footer class="bg-white sticky-footer">
                 <div class="container my-auto">
+                    <!-- !TODO: Give bottom padding to button (fuck you css) -->
+                    <div class="text-center my-auto"><button id="copy-button" class="btn btn-primary">Copy link!</button></div>
                     <div class="text-center my-auto copyright"><span>Copyright © Packetenizer 2021</span></div>
                 </div>
             </footer>
@@ -55,6 +57,17 @@
     <script type="text/javascript">
         const navItem = document.getElementById("nav-item-{{nav_item}}");
         navItem.classList.add("active")
+
+        const copyButton = document.getElementById("copy-button");
+        copyButton.addEventListener('click', (e) => {
+            navigator.clipboard.writeText(window.location.origin + "/share/{{session_id}}")
+                .then(() => {
+                    console.log("copied");
+                })
+                .catch(() => {
+                    console.log("copy failed");
+                })
+        })
     </script>
 </body>
 

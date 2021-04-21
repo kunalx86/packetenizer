@@ -65,12 +65,19 @@
         </div>
     </section>
     <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <h3>{{ message }}</h3>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <div class="row">
             <div class="col-md-12">
-                <form method="post" action="/Homepage.html" id="#">
+                <form method="POST" action="/file" enctype="multipart/form-data">
                     <div class="form-group files color">
                         <label> </label>
-                        <input type="file" class="form-control" multiple="">
+                        <input type="file" class="form-control" name="dump-file" id="dump-file">
                     </div>
                     <div class="col-md-12 "><button class="btn btn-primary btn-block btn-lg" type="submit">Upload</button></div>
                     <label> </label>
@@ -119,7 +126,9 @@
 
             <div class="container my-auto">
                 {% if session_present %}
-                    <div class="text-center my-auto"><button class="btn btn-primary " type="submit">Goto Dashboard</button></div>
+                    <!-- <div class="text-center my-auto"><button id="goto-dash" class="btn btn-primary " type="submit">Goto Dashboard</button></div> -->
+                    <!-- #TODO: Center the button (fuck you css) -->
+                    <a class="text-center my-auto btn btn-primary btn-sm d-none d-sm-inline-block" role="button" href="/dashboard">Goto Dashboard</a>
                 {% endif %}
                 <label></label>
                 <div class="text-center my-auto copyright"><span>Copyright © Packetenizer 2021</span></div>

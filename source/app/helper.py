@@ -22,3 +22,8 @@ def manage_file_parse(dump_file):
     session['id'] = random_id
     serialized_dict_storage[random_id] = return_value
     return '', True
+
+def test_session():
+    if 'id' in session and session['id'] in serialized_dict_storage:
+        return '', True
+    return "Session not set. Please upload file", False

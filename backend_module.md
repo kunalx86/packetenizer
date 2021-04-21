@@ -127,6 +127,15 @@
     ],
     // /api/analyze
     'analyze': {
+        'counts': {
+            'tcp_downloaded': 0,
+            'tcp_uploaded': 0,
+            'udp_downloaded': 0,
+            'udp_uploaded': 0,
+            'threats': 0,
+            'tcp_con': 0,
+            'udp_con': 0,
+        },
         'tcp': [
             {
                 'source_address',

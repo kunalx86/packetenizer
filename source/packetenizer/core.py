@@ -50,6 +50,15 @@ class CoreStructure:
             'dns': [],
             'invalid': [],
             'analyze': {
+                'counts': {
+                    'tcp_downloaded': 0,
+                    'tcp_uploaded': 0,
+                    'udp_downloaded': 0,
+                    'udp_uploaded': 0,
+                    'threats': 0,
+                    'tcp_con': 0,
+                    'udp_con': 0,
+                },
                 'tcp': [],
                 'udp': [],
                 'dns': [],
@@ -76,6 +85,16 @@ class CoreStructure:
                 serialized_dict['udp'].append(connection_serialized_dict)
 
         for agg_con in analyze.values():
+            if agg_con['type'] == 'TCP':
+                serialized_dict['analyze']['counts']['tcp_downloaded'] += agg_con['downloaded']
+                serialized_dict['analyze']['counts']['tcp_uploaded'] += agg_con['uploaded']
+                serialized_dict['analyze']['counts']['threats'] += 1 if agg_con['is_dos'] or agg_con['is_nmap'] else 0
+                serialized_dict['analyze']['counts']['tcp_con'] += 1
+            if agg_con['type'] == 'UDP':
+                serialized_dict['analyze']['counts']['udp_downloaded'] += agg_con['downloaded']
+                serialized_dict['analyze']['counts']['udp_uploaded'] += agg_con['uploaded']
+                serialized_dict['analyze']['counts']['threats'] += 1 if agg_con['is_dos'] else 0
+                serialized_dict['analyze']['counts']['udp_con'] += 1
             if agg_con['type'] != 'DNS':
                 s_addr, d_addr = agg_con['s/d']
                 agg_con.pop('s/d', None)
