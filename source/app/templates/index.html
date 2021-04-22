@@ -65,13 +65,9 @@
         </div>
     </section>
     <div class="container">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <h3>{{ message }}</h3>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %}
+        <h3>{{ message }}</h3>
+        {% endfor %} {% endif %} {% endwith %}
         <div class="row">
             <div class="col-md-12">
                 <form method="POST" action="/file" enctype="multipart/form-data">
@@ -126,9 +122,11 @@
 
             <div class="container my-auto">
                 {% if session_present %}
-                    <!-- <div class="text-center my-auto"><button id="goto-dash" class="btn btn-primary " type="submit">Goto Dashboard</button></div> -->
-                    <!-- #TODO: Center the button (fuck you css) -->
+                <!-- <button id="goto-dash" class="btn btn-primary " type="submit">Goto Dashboard</button></div> -->
+                <!-- #TODO: Center the button (fuck you css) -->
+                <div class="text-center my-auto">
                     <a class="text-center my-auto btn btn-primary btn-sm d-none d-sm-inline-block" role="button" href="/dashboard">Goto Dashboard</a>
+                </div>
                 {% endif %}
                 <label></label>
                 <div class="text-center my-auto copyright"><span>Copyright © Packetenizer 2021</span></div>
