@@ -9,48 +9,58 @@ TCP Details
                 <h3 class="text-dark mb-0">TCP Details</h3>
             </div>
             <!-- Your loop starts here -->
-            <div class="row">
-                <div class="col-md-6 col-xl-5.5 mb-4">
-                    <div class="card shadow border-left-success py-2">
-                        <div class="card-body">
-                            <div class="row align-items-center no-gutters">
-                                <div class="col mr-2">
-                                    <div class="text-uppercase text-success font-weight-bold text-xs mb-1"><span>Client Info</span></div>
-                                    <div class="text-dark h5 mb-0"><span>Source Address :</span> <span class="font-weight-bold">192.168.0.104 </span> </div>
-                                    <div class="text-dark h5 mb-0"><span>Source Port :</span><span class="font-weight-bold"> 57990 </span></div>
-                                    <div class="text-dark h5 mb-0">
-                                        <span> Download : </span><span class="font-weight-bold">10620999 B</span>
+            {% for n_value in data %}
+                <div class="row">
+                    <div class="col-md-6 col-xl-5.5 mb-4">
+                        <div class="card shadow border-left-success py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center no-gutters">
+                                    <div class="col mr-2">
+                                        <div class="text-uppercase text-success font-weight-bold text-xs mb-1"><span>Client Info</span></div>
+                                        <div class="text-dark h5 mb-0"><span>Source Address :</span> <span class="font-weight-bold">{{ n_value.ip['source_address'] }}</span> </div>
+                                        <div class="text-dark h5 mb-0"><span>Source Port :</span><span class="font-weight-bold">{{ n_value.s_port }}</span></div>
+                                        <div class="text-dark h5 mb-0">
+                                            {% if n_value.download <= 204800 %}
+                                            <span> Download : </span><span class="font-weight-bold">{{ '{0:.2f} KB'.format(n_value.download/(1024 ** 1)) }}</span>  
+                                            {% else %}
+                                            <span> Download : </span><span class="font-weight-bold">{{ '{0:.2f} MB'.format(n_value.download/(1024 ** 2)) }}</span>  
+                                            {% endif %}  
+                                        </div>
+                                        <div class="text-dark h5 mb-0">
+                                            {% if n_value.upload <= 204800 %}
+                                            <span> Upload : </span><span class="font-weight-bold">{{ '{0:.2f} KB'.format(n_value.upload/(1024 ** 1)) }}</span>  
+                                            {% else %}
+                                            <span> Upload : </span><span class="font-weight-bold">{{ '{0:.2f} MB'.format(n_value.upload/(1024 ** 2)) }}</span>  
+                                            {% endif %}  
+                                        </div>
+                                        <div class="text-dark h5 mb-0"><span>Start Time :</span> <span class="font-weight-bold">{{ n_value.start_time }}</span></div>
+                                        <div class="rows">
+                                            <div class="text-dark h5 mb-0"><span>Average Reception Time : </span> <span class="font-weight-bold">{{ '%0.2f'| format(n_value.avg_rec_time|float) }} ms</span> </div>
+                                        </div>
                                     </div>
-                                    <div class="text-dark h5 mb-0">
-                                        <span>Upload :</span> <span class="font-weight-bold"> 1769 B</span>
-                                    </div>
-                                    <div class="text-dark h5 mb-0"><span>Start Time :</span> <span class="font-weight-bold"> 2021-01-22 19:52:43.152639 </span></div>
-                                    <div class="rows">
-                                        <div class="text-dark h5 mb-0"><span>Average Reception Time : </span> <span class="font-weight-bold">563.884ms</span> </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-5.5 mb-4">
+                        <div class="card shadow border-left-warning py-2">
+                            <div class="card-body">
+                                <div class="row align-items-center no-gutters">
+                                    <div class="col mr-2">
+                                        <div class="text-uppercase text-warning font-weight-bold text-xs mb-1"><span>Server Info</span></div>
+                                        <div class="text-dark h5 mb-0"><span>Destination Address : </span> <span class="font-weight-bold">{{ n_value.ip['destination_address'] }}</span></div>
+                                        <div class="text-dark h5 mb-0"><span>Destination Port : </span> <span class="font-weight-bold">{{ n_value.d_port }}</span> </div>
+                                        <div class="text-dark h5 mb-0"><span>Average Transmission Time : </span> <span class="font-weight-bold">{{ '%0.2f'| format(n_value.avg_trans_time|float) }} ms</span> </div>
+                                        <div class="text-dark h5 mb-0"><span>Protocol : </span> <span class="font-weight-bold">{{ n_value.protocol }}</span> </div>
+                                        <div class="text-dark h5 mb-0"><span>Unintended : </span> <span class="font-weight-bold">{{ n_value.unintended }}</span> </div>
+                                        <div class="text-dark h5 mb-0"><span>IP Version : </span> <span class="font-weight-bold">{{ n_value.ip['version'] }}</span> </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 col-xl-5.5 mb-4">
-                    <div class="card shadow border-left-warning py-2">
-                        <div class="card-body">
-                            <div class="row align-items-center no-gutters">
-                                <div class="col mr-2">
-                                    <div class="text-uppercase text-warning font-weight-bold text-xs mb-1"><span>Server Info</span></div>
-                                    <div class="text-dark h5 mb-0"><span>Destination Address : </span> <span class="font-weight-bold">52.216.164.19</span></div>
-                                    <div class="text-dark h5 mb-0"><span>Destination Port : </span> <span class="font-weight-bold">443 </span> </div>
-                                    <div class="text-dark h5 mb-0"><span>Average Transmission Time : </span> <span class="font-weight-bold"> 880.33ms</span> </div>
-                                    <div class="text-dark h5 mb-0"><span>Protocol : </span> <span class="font-weight-bold"> HTTPS</span> </div>
-                                    <div class="text-dark h5 mb-0"><span>Unintended : </span> <span class="font-weight-bold"> False</span> </div>
-                                    <div class="text-dark h5 mb-0"><span>IP Versiom : </span> <span class="font-weight-bold"> IPv4</span> </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}

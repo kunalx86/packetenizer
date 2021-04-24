@@ -9,6 +9,7 @@ ICMP Details
                 <h3 class="text-dark mb-0">ICMP Details</h3>
             </div>
             <!-- Your loop starts here -->
+            {% for n_value in data %}
             <div class="row">
                 <div class="col-md-6 col-xl-5.5 mb-4">
                     <div class="card shadow border-left-success py-2">
@@ -16,11 +17,11 @@ ICMP Details
                             <div class="row align-items-center no-gutters">
                                 <div class="col mr-2">
                                     <div class="text-uppercase text-success font-weight-bold text-xs mb-1"><span>Client Info</span></div>
-                                    <div class="text-dark h5 mb-0"><span>Source Address :</span> <span class="font-weight-bold">192.168.0.25 </span></div>
-                                    <div class="text-dark h5 mb-0"><span>Total Requests :</span><span class="font-weight-bold"> 5 </span></div>
-                                    <div class="text-dark h5 mb-0"><span>Start Time :</span> <span class="font-weight-bold"> 2021-03-24 18:24:03.339865 </span></div>
+                                    <div class="text-dark h5 mb-0"><span>Source Address :</span> <span class="font-weight-bold">{{ n_value.ip['source_address'] }}</span></div>
+                                    <div class="text-dark h5 mb-0"><span>Total Requests :</span><span class="font-weight-bold">{{ n_value.total_requests }}</span></div>
+                                    <div class="text-dark h5 mb-0"><span>Start Time :</span> <span class="font-weight-bold">{{ n_value.start_time }}</span></div>
                                     <div class="rows">
-                                        <div class="text-dark h5 mb-0"><span>ID : </span> <span class="font-weight-bold">1</span> </div>
+                                        <div class="text-dark h5 mb-0"><span>ID : </span> <span class="font-weight-bold">{{ n_value.id }}</span> </div>
                                     </div>
                                 </div>
                             </div>
@@ -33,17 +34,18 @@ ICMP Details
                             <div class="row align-items-center no-gutters">
                                 <div class="col mr-2">
                                     <div class="text-uppercase text-warning font-weight-bold text-xs mb-1"><span>Server Info</span></div>
-                                    <div class="text-dark h5 mb-0"><span>Destination Address : </span> <span class="font-weight-bold">8.8.8.8</span></div>
-                                    <div class="text-dark h5 mb-0"><span>Responded Requests : </span> <span class="font-weight-bold">5 </span> </div>
-                                    <div class="text-dark h5 mb-0"><span>Average Ping : </span> <span class="font-weight-bold"> 19.72ms</span> </div>
-                                    <div class="text-dark h5 mb-0"><span>Packet Type : </span> <span class="font-weight-bold"> Ping</span> </div>
-                                    <div class="text-dark h5 mb-0"><span>IP Version : </span> <span class="font-weight-bold"> IPv4</span> </div>
+                                    <div class="text-dark h5 mb-0"><span>Destination Address : </span> <span class="font-weight-bold">{{ n_value.ip['destination_address'] }}</span></div>
+                                    <div class="text-dark h5 mb-0"><span>Responded Requests : </span> <span class="font-weight-bold">{{ n_value.responded_requests }}</span> </div>
+                                    <div class="text-dark h5 mb-0"><span>Average Ping : </span> <span class="font-weight-bold">{{ '%0.2f'| format(n_value.average_ping|float) }} ms</span> </div>
+                                    <div class="text-dark h5 mb-0"><span>Packet Type : </span> <span class="font-weight-bold">{{ n_value.packet_type }}</span> </div>
+                                    <div class="text-dark h5 mb-0"><span>IP Version : </span> <span class="font-weight-bold">{{ n_value.ip['version'] }}</span> </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}

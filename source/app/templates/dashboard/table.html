@@ -30,59 +30,45 @@ Connection Details
                             </thead>
                             <tbody>
                                 <!-- Your loop starts here -->
-                                <tr>
-                                    <td>TCP</td>
-                                    <td>192.168.0.104</td>
-                                    <td>52.216.164.19</td>
-                                    <td>No</td>
-                                    <td>No</td>
-                                    <td>75</td>
-                                    <td>5</td>
-                                    <td>563.884ms</td>
-                                    <td>880.33ms</td>
-                                    <td>1769 B</td>
-                                    <td>10620999 B</td>
-                                </tr>
-                                <tr>
-                                    <td>TCP</td>
-                                    <td>192.168.0.104</td>
-                                    <td>52.216.164.19</td>
-                                    <td>No</td>
-                                    <td>No</td>
-                                    <td>75</td>
-                                    <td>5</td>
-                                    <td>563.884ms</td>
-                                    <td>880.33ms</td>
-                                    <td>1769 B</td>
-                                    <td>10620999 B</td>
-                                </tr>
-                                <tr>
-                                    <td>UDP</td>
-                                    <td>192.168.0.25 </td>
-                                    <td>52.114.4.49</td>
-                                    <td>No</td>
-                                    <td>No</td>
-                                    <td>100</td>
-                                    <td>15</td>
-                                    <td>987.233ms</td>
-                                    <td>195.935ms</td>
-                                    <td>1095052 B</td>
-                                    <td>423408 B</td>
-                                </tr>
-                                <tr>
-                                    <td>UDP</td>
-                                    <td>192.168.0.25 </td>
-                                    <td>52.114.4.49</td>
-                                    <td>No</td>
-                                    <td>No</td>
-                                    <td>100</td>
-                                    <td>15</td>
-                                    <td>987.233ms</td>
-                                    <td>195.935ms</td>
-                                    <td>1095052 B</td>
-                                    <td>423408 B</td>
-                                </tr>
-                                </tr>
+                                {% for key, value in data.items() %}
+                                    {% for n_value in value %}
+                                        <tr>
+                                            <td>{{ n_value.type }}</td>
+                                            <td>{{ n_value.source_address }}</td>
+                                            <td>{{ n_value.destination_address }}</td>
+                                            {% if n_value.is_dos %}
+                                                <td>Yes</td>
+                                            {% else %}
+                                                <td>No</td>
+                                            {% endif %} 
+                                            {% if n_value.is_nmap %}
+                                                <td>Yes</td>
+                                            {% elif 'udp' in key %}
+                                                <td>N/A</td>
+                                            {% else %}
+                                                <td>No</td>
+                                            {% endif %}
+                                            <td>{{ n_value.connections }}</td>
+                                            {% if 'udp' in key %}
+                                                <td>N/A</td>
+                                            {% else %}
+                                                <td>{{ n_value.unintended }}</td>
+                                            {% endif %}
+                                            <td>{{'%0.2f'| format(n_value.avg_rec|float)}}ms</td>
+                                            <td>{{'%0.2f'| format(n_value.avg_trans|float)}}ms</td>
+                                            {% if n_value.uploaded <= 204800 %}
+                                            <td>{{ '{0:.2f} KB'.format(n_value.uploaded/(1024 ** 1)) }}</td>
+                                            {% else %}
+                                            <td>{{ '{0:.2f} MB'.format(n_value.uploaded/(1024 ** 2)) }}</td>
+                                            {% endif %}
+                                            {% if n_value.downloaded <= 204800 %}
+                                            <td>{{ '{0:.2f} KB'.format(n_value.downloaded/(1024 ** 1)) }}</td>
+                                            {% else %}
+                                            <td>{{ '{0:.2f} MB'.format(n_value.downloaded/(1024 ** 2)) }}</td>
+                                            {% endif %}
+                                            </tr>    
+                                    {% endfor %}
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
