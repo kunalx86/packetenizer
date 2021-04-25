@@ -22,8 +22,10 @@
                     <div class="card-body">
                         <div class="row align-items-info no-gutters">
                             <div class="col mr-2">
-                                <div class="text-uppercase text-danger font-weight-bold text-xs mb-1"><span>DOS Info</span></div>
-                                <div class="text-dark h5 mb-0"><span>Host {{ packet.source_address }} may have performed DoS on host {{ packet.destination_address }} </span></div>
+                                <div class="text-uppercase text-danger font-weight-bold text-xs mb-1"><span>Unidentified Packets</span></div>
+                                {% for packet in data['invalid'] %}
+                                    <div class="text-dark h5 mb-0"><span>Hosts {{ packet.source_address }} and {{ packet.destination_address }} exchanged {{ packet.count }} unidentified packets</span></div>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>

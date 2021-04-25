@@ -66,14 +66,14 @@
     </section>
     <div class="container">
         {% with messages = get_flashed_messages() %} {% if messages %} {% for message in messages %}
-        <h3>{{ message }}</h3>
+        <div><h3>{{ message }}</h3></div>
         {% endfor %} {% endif %} {% endwith %}
         <div class="row">
             <div class="col-md-12">
                 <form method="POST" action="/file" enctype="multipart/form-data">
                     <div class="form-group files color">
                         <label> </label>
-                        <input type="file" class="form-control" name="dump-file" id="dump-file">
+                        <input type="file" class="form-control" name="dump-file" id="dump-file" required>
                     </div>
                     <div class="col-md-12 "><button class="btn btn-primary btn-block btn-lg" type="submit">Upload</button></div>
                     <label> </label>
