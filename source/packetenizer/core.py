@@ -12,6 +12,7 @@ class CoreStructure:
         '''
         It expects a scapy parsed dump file
         '''
+        self._core_dict = {}
         self._packets = scapy_packets
 
     def start(self):

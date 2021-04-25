@@ -9,10 +9,12 @@ def parse_and_analyze(uploaded_file):
         parsed_file = rdpcap(BufferedReader(uploaded_file))
         core_structure = CoreStructure(parsed_file)
         core_structure.start()
+        aggregated_dict = {}
+        problem_ips = []
         aggregated_dict, problem_ips = analyze(core_structure)
         serialized_dict = core_structure.serialize(aggregated_dict, problem_ips)
     except Scapy_Exception:
         return "Scapy failed to parse file", False
     except Exception:
-        return "Unkwown error", False
+        return "Unknown Error", False
     return serialized_dict, True
