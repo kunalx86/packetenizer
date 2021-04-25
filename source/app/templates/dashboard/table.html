@@ -1,0 +1,79 @@
+{% extends "dashboard/dashboard.html" %}
+{% block title %}
+Connection Details
+{% endblock %}
+{% block content %}
+   <div id="content">
+        <div class="container-fluid">
+            <h3 class="text-dark mb-4">Connection Details</h3>
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <p class="text-primary m-0 font-weight-bold">Connection Details Table</p>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
+                        <table class="table my-0" id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Source Address</th>
+                                    <th>Destination Address</th>
+                                    <th>DOS Attack Identified</th>
+                                    <th>NMAP Scan Identified</th>
+                                    <th>Connections</th>
+                                    <th>Unintended Connections</th>
+                                    <th>Average Reception Time</th>
+                                    <th>Average Transmission Time</th>
+                                    <th>Data Uploaded</th>
+                                    <th>Data Downloaded</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Your loop starts here -->
+                                {% for key, value in data.items() %}
+                                    {% for n_value in value %}
+                                        <tr>
+                                            <td>{{ n_value.type }}</td>
+                                            <td>{{ n_value.source_address }}</td>
+                                            <td>{{ n_value.destination_address }}</td>
+                                            {% if n_value.is_dos %}
+                                                <td>Yes</td>
+                                            {% else %}
+                                                <td>No</td>
+                                            {% endif %} 
+                                            {% if n_value.is_nmap %}
+                                                <td>Yes</td>
+                                            {% elif 'udp' in key %}
+                                                <td>N/A</td>
+                                            {% else %}
+                                                <td>No</td>
+                                            {% endif %}
+                                            <td>{{ n_value.connections }}</td>
+                                            {% if 'udp' in key %}
+                                                <td>N/A</td>
+                                            {% else %}
+                                                <td>{{ n_value.unintended }}</td>
+                                            {% endif %}
+                                            <td>{{'%0.2f'| format(n_value.avg_rec|float)}}ms</td>
+                                            <td>{{'%0.2f'| format(n_value.avg_trans|float)}}ms</td>
+                                            {% if n_value.uploaded <= 204800 %}
+                                            <td>{{ '{0:.2f} KB'.format(n_value.uploaded/(1024 ** 1)) }}</td>
+                                            {% else %}
+                                            <td>{{ '{0:.2f} MB'.format(n_value.uploaded/(1024 ** 2)) }}</td>
+                                            {% endif %}
+                                            {% if n_value.downloaded <= 204800 %}
+                                            <td>{{ '{0:.2f} KB'.format(n_value.downloaded/(1024 ** 1)) }}</td>
+                                            {% else %}
+                                            <td>{{ '{0:.2f} MB'.format(n_value.downloaded/(1024 ** 2)) }}</td>
+                                            {% endif %}
+                                            </tr>    
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

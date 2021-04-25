@@ -1,4 +1,5 @@
 import datetime
+from dateutil import tz
 from itertools import zip_longest
 from .constants import known_protocols, dns_types, tcp_flags
 
@@ -50,6 +51,18 @@ def create_connection(raw_packet):
     else:
         # Packet with no IP layer? Ughh will think about this later!
         return Invalid(raw_packet)
+
+def get_date(timestamp):
+    if not timestamp or timestamp == 0:
+        return ''
+    from_zone = tz.gettz('UTC')
+    to_zone = tz.tzlocal()
+
+    utc_time = datetime.datetime.utcfromtimestamp(timestamp)
+    utc_time = utc_time.replace(tzinfo=from_zone)
+    central = utc_time.astimezone(to_zone)
+    date = central.strftime('%d/%m/%Y, %H:%M:%S')
+    return date
 
 class Invalid:
     '''
@@ -117,7 +130,7 @@ class ICMP:
             'id': self._id,
             'total_requests': self.count_packets(),
             'responded_requests': self.count_packets() - self.count_failed(),
-            'start_time': str(datetime.datetime.fromtimestamp(self.response_timestamps[1][1])) if 1 in self.response_timestamps else None,
+            'start_time': get_date(self.response_timestamps[1][1]) if 1 in self.response_timestamps else '',
             'average_ping': self.avg_response_time(),
         }
 
@@ -129,7 +142,7 @@ class ICMP:
                 continue
             avg_res += query[3]
         avg_res = avg_res / len(self.response_timestamps)
-        return datetime.datetime.fromtimestamp(avg_res).microsecond/1000
+        return datetime.datetime.utcfromtimestamp(avg_res).microsecond/1000
 
     def count_retries(self):
         retries = 0
@@ -224,7 +237,11 @@ class TCPSegment:
                 self.unintended_connection = True
             return
 
-        if self.app_layer:
+        if (self.d_port == 53 and not self.app_layer) and 'DNS' in raw_data:
+            self.app_layer = DNS(raw_data)
+            return
+
+        if self.app_layer and 'DNS' in raw_data:
             self.app_layer.update(raw_data, swap)
         else:
             if not self.connection_finished:
@@ -253,7 +270,7 @@ class TCPSegment:
             'download': self.data_downloaded,
             'upload': self.data_uploaded,
             'protocol': self.protocol,
-            'start_time': str(datetime.datetime.fromtimestamp(self.transmission_timestamps[0])) if len(self.transmission_timestamps) > 0 else 0,
+            'start_time': get_date(self.transmission_timestamps[0]) if len(self.transmission_timestamps) > 0 else '',
             'avg_rec_time': r_avg,
             'avg_trans_time': t_avg,
             'unintended': self.unintended_connection,
@@ -267,8 +284,8 @@ class TCPSegment:
             t_avg += t_time if t_time else 0
         r_avg = r_avg / len(self.reception_timestamps) if len(self.reception_timestamps) != 0 else -1
         t_avg = t_avg / len(self.transmission_timestamps) if len(self.transmission_timestamps) != 0 else -1
-        r_avg = datetime.datetime.fromtimestamp(r_avg).microsecond/1000
-        t_avg = datetime.datetime.fromtimestamp(t_avg).microsecond/1000
+        r_avg = datetime.datetime.utcfromtimestamp(r_avg).microsecond/1000
+        t_avg = datetime.datetime.utcfromtimestamp(t_avg).microsecond/1000
         return (r_avg, t_avg)
 
     def is_unintended(self) -> str:
@@ -341,7 +358,7 @@ class UDPDatagram:
             'download': self.downloaded,
             'upload': self.uploaded,
             'protocol': self.protocol,
-            'start_time': str(datetime.datetime.fromtimestamp(self.transmission_timestamps[0])) if len(self.transmission_timestamps) > 0 else 0,
+            'start_time': get_date(self.transmission_timestamps[0]) if len(self.transmission_timestamps) > 0 else '',
             'avg_rec_time': r_avg,
             'avg_trans_time': t_avg,
         }
@@ -359,8 +376,8 @@ class UDPDatagram:
             t_avg += t_time if t_time else 0
         r_avg = r_avg / len(self.reception_timestamps) if len(self.reception_timestamps) != 0 else -1
         t_avg = t_avg / len(self.transmission_timestamps) if len(self.transmission_timestamps) != 0 else -1
-        r_avg = datetime.datetime.fromtimestamp(r_avg).microsecond/1000
-        t_avg = datetime.datetime.fromtimestamp(t_avg).microsecond/1000
+        r_avg = datetime.datetime.utcfromtimestamp(r_avg).microsecond/1000
+        t_avg = datetime.datetime.utcfromtimestamp(t_avg).microsecond/1000
         return (r_avg, t_avg)
 
     def is_dns(self) -> bool:
@@ -386,7 +403,7 @@ class DNS:
     '''
     record_type = None
     query_response_time = None
-    query_initiated = None
+    query_initiated = 0 
     domain_name = '' # It is not necessary for this to be a domain name, consider it as query
     ip_address = None # It is not necessary for this to be IP, consider it to be a response
 
@@ -416,7 +433,7 @@ class DNS:
                 if self.query_initiated:
                     dt = float(raw_data.time)
                     self.query_response_time = dt - self.query_initiated
-                    dt = datetime.datetime.fromtimestamp(self.query_response_time)
+                    dt = datetime.datetime.utcfromtimestamp(self.query_response_time)
                     self.query_response_time = dt.microsecond/1000
 
     def serialize(self, transport_layer: str, ip_layer: IPPacket) -> dict:
@@ -427,7 +444,7 @@ class DNS:
             'response_ip': self.ip_address,
             'record_type': self.record_type,
             'response_time': self.query_response_time,
-            'start_time': str(datetime.datetime.fromtimestamp(self.query_initiated)) if self.query_initiated > 0 else 0,
+            'start_time': get_date(self.query_initiated)
         }
 
     def __str__(self):

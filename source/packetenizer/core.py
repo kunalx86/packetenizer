@@ -12,6 +12,7 @@ class CoreStructure:
         '''
         It expects a scapy parsed dump file
         '''
+        self._core_dict = {}
         self._packets = scapy_packets
 
     def start(self):
@@ -29,15 +30,18 @@ class CoreStructure:
                 # print('Ughh.. Problem')
                 # print(module.debug_packet(packet))
             else:
-                if not (s_socket, d_socket) in self._core_dict:
-                    if not (d_socket, s_socket) in self._core_dict:
-                        # The connection doesn't exist create a new one
-                        self._core_dict[(s_socket, d_socket)] = module.create_connection(packet)
+                try:
+                    if not (s_socket, d_socket) in self._core_dict:
+                        if not (d_socket, s_socket) in self._core_dict:
+                            # The connection doesn't exist create a new one
+                            self._core_dict[(s_socket, d_socket)] = module.create_connection(packet)
+                        else:
+                            # The connection does exist just set the swap=true
+                            self._core_dict[(d_socket, s_socket)].update(packet, swap=True)
                     else:
-                        # The connection does exist just set the swap=true
-                        self._core_dict[(d_socket, s_socket)].update(packet, swap=True)
-                else:
-                    self._core_dict[(s_socket, d_socket)].update(packet)
+                        self._core_dict[(s_socket, d_socket)].update(packet)
+                except:
+                    continue
     
     def serialize(self, analyze: dict, problem_ips: list):
         serialized_dict = {
@@ -46,7 +50,22 @@ class CoreStructure:
             'icmp': [],
             'dns': [],
             'invalid': [],
-            'analyze': [],
+            'analyze': {
+                'counts': {
+                    'tcp_downloaded': 0,
+                    'tcp_uploaded': 0,
+                    'udp_downloaded': 0,
+                    'udp_uploaded': 0,
+                    'threats': 0,
+                    'tcp_con': 0,
+                    'udp_con': 0,
+                },
+                'tcp': [],
+                'udp': [],
+                'dns': [],
+                'icmp': [],
+                'invalid': [],
+            },
         }
 
         for connection in self._core_dict.values():
@@ -67,7 +86,22 @@ class CoreStructure:
                 serialized_dict['udp'].append(connection_serialized_dict)
 
         for agg_con in analyze.values():
-            serialized_dict['analyze'].append(agg_con)
+            if agg_con['type'] == 'TCP':
+                serialized_dict['analyze']['counts']['tcp_downloaded'] += agg_con['downloaded']
+                serialized_dict['analyze']['counts']['tcp_uploaded'] += agg_con['uploaded']
+                serialized_dict['analyze']['counts']['threats'] += 1 if agg_con['is_dos'] or agg_con['is_nmap'] else 0
+                serialized_dict['analyze']['counts']['tcp_con'] += 1
+            if agg_con['type'] == 'UDP':
+                serialized_dict['analyze']['counts']['udp_downloaded'] += agg_con['downloaded']
+                serialized_dict['analyze']['counts']['udp_uploaded'] += agg_con['uploaded']
+                serialized_dict['analyze']['counts']['threats'] += 1 if agg_con['is_dos'] else 0
+                serialized_dict['analyze']['counts']['udp_con'] += 1
+            if agg_con['type'] != 'DNS':
+                s_addr, d_addr = agg_con['s/d']
+                agg_con.pop('s/d', None)
+                agg_con['source_address'] = s_addr
+                agg_con['destination_address'] = d_addr
+            serialized_dict['analyze'][agg_con['type'].lower()].append(agg_con)
 
         return serialized_dict
 

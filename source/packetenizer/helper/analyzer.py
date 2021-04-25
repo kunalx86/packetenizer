@@ -119,6 +119,8 @@ def analyze(core_structure: CoreStructure):
         
         if current_agg_obj['type'] == 'TCP':
             # Calculating the averages
+            current_agg_obj['is_dos'] = False
+            current_agg_obj['is_nmap'] = False
             current_agg_obj['avg_rec'] = current_agg_obj['avg_rec'] / current_agg_obj['connections']
             current_agg_obj['avg_trans'] = current_agg_obj['avg_trans'] / current_agg_obj['connections']
 
@@ -142,6 +144,7 @@ def analyze(core_structure: CoreStructure):
 
         elif current_agg_obj['type'] == 'UDP':
             # Calculating averages
+            current_agg_obj['is_dos'] = False
             current_agg_obj['avg_rec'] = current_agg_obj['avg_rec'] / current_agg_obj['connections']
             current_agg_obj['avg_trans'] = current_agg_obj['avg_trans'] / current_agg_obj['connections']
 

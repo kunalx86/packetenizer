@@ -21,3 +21,13 @@
 
 ## Run python code for testing
 - `python run_core.py samples/sample_file.pcap`
+
+## Run everytime new shell session is started
+- `export FLASK_APP=run.py`
+- `export FLASK_ENV=development`
+- For windows:
+- `set FLASK_APP=run.py`
+- `set FLASK_ENV=development`
+
+## Run Flask App
+- `flask run`

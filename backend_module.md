@@ -27,20 +27,14 @@
 ## Views
 - `GET/` -> This should return the index.html file i.e. the landing page.
 - `POST/file` -> The dump file should be POSTed to this route. Should generate the random number that will be sent in cookie. The parsing and analyzation of file should happen here. Various errors can be generated. File not valid, error during parsing, error created in our module etc. In any error redirect user back to / and state error message. If everything is successful generate the serialized dictionary and store it in lookup dictionary. Redirect the user to /dashboard with the cookie set.
-- `GET/dashboard` -> This should return the static files related to dashboard UI.
-### Maybe
-- `GET/dashboard/tcp` -> This should return the static files related to TCP view.
-- `GET/dashboard/udp` -> Same as above except this is for UDP.
-- `GET/dashboard/dns` -> Same as above except this is for DNS.
-- `GET/dashboard/icmp` -> Same as above except this is for ICMP.
-- `GET/dashboard/invalid` -> Same as above except this is for INVALID.
-- `GET/dashboard/analyze` -> Same as above except this is for ANALYZER.
-- `GET/api/tcp` -> API counterpart for TCP.
-- `GET/api/udp` -> API counterpart for UDP.
-- `GET/api/dns` -> API counterpart for DNS.
-- `GET/api/icmp` -> API counterpart for ICMP.
-- `GET/api/invalid` -> API counterpart for INVALID.
-- `GET/api/analyze` -> API counterpart for ANALYZE.
+- `GET/dashboard` -> This should return an overview page for all connections. Use `analyze` data.
+- `GET/dashboard/tcp` -> This should return a page listing all TCP connections. Use `tcp` data.
+- `GET/dashboard/udp` -> This should return a page listing all UDP connections. Use `udp` data.
+- `GET/dashboard/dns` -> This should return a page listing all DNS connections. Use `dns` data.
+- `GET/dashboard/icmp` -> This should return a page listing all ICMP connections. Use `icmp` data.
+- `GET/dashboard/invalid` -> This should return a page listing all INVALID connections. Use `invalid` data.
+- `GET/dashboard/analyze` -> This should return a page dedicated for analyzed data. Use `analyze` data.
+- `GET/share/<id>` -> This should set the session id same as the one received in URL provided the id exists so that the particular data can be shared.
 
 ## Doubts
 - Whether to just send data via /api routes and render the data using AJAX in frontend or to render the pages server side using Jinja.
@@ -132,25 +126,64 @@
         },
     ],
     // /api/analyze
-    'analyze': [
-        {
-            'type',
+    'analyze': {
+        'counts': {
+            'tcp_downloaded': 0,
+            'tcp_uploaded': 0,
+            'udp_downloaded': 0,
+            'udp_uploaded': 0,
+            'threats': 0,
+            'tcp_con': 0,
+            'udp_con': 0,
+        },
+        'tcp': [
+            {
+                'source_address',
+                'destination_address',
+                'is_dos',
+                'is_nmap',
+                'connections',
+                'unintended',
+                'avg_rec',
+                'avg_trans',
+                'uploaded',
+                'downloaded',
+            }
+        ],
+        'udp': [
+            {
+                'source_address',
+                'destination_address',
+                'is_dos',
+                'connections',
+                'avg_rec',
+                'avg_trans',
+                'uploaded',
+                'downloaded',
+            },
+        ],
+        'dns': [
+            {
+                'server',
+                'avg_response_time',
+                'queries_resolved',
+                'total_queries',
+            },
+        ],
+        'icmp': [
+            {
+                'source_address',
+                'destination_address',
+                'avg_ping',
+                'connections',
+                'total_packets'
+            },
+        ],
+        'invalid': [
             'source_address',
             'destination_address',
-            'is_dos', // For UDP/TCP
-            'is_nmap', // For TCP
-            'connections', // For UDP/TCP/ICMP
-            'unintended', // For TCP
-            'avg_rec', // For UDP/TCP,
-            'avg_trans', // For UDP/TCP,
-            'uploaded', // For UDP/TCP,
-            'downloaded', // For UDP/TCP
-            'avg_response_time', // For DNS
-            'queries_resolved', // For DNS
-            'total_queries', // For DNS
-            'avg_ping', // For ICMP
-            'count', // For Invalid
-        },
-    ],
+            'count'
+        ],
+    },
 }
 ```
