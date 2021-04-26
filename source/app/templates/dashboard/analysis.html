@@ -1,4 +1,7 @@
-{% extends "dashboard/dashboard.html" %} {% block title %} Analysis {% endblock %} {% block content %}
+{% extends "dashboard/dashboard.html" %}
+{% block title %}Analysis{% endblock %}
+{% block filename %}{{file_name}}{% endblock %}
+{% block content %}
 <div id="content">
     <div class="container-fluid">
         <div class="d-sm-flex justify-content-between align-items-center mb-4">

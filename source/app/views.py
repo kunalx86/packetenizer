@@ -40,7 +40,7 @@ def dashboard_home():
         flash(return_value)
         return redirect('/')
     data = serialized_dict_storage[session['id']]['analyze']['counts']
-    return render_template('dashboard/home.html', data=data, nav_item="1",session_id=session['id'])
+    return render_template('dashboard/home.html', data=data, nav_item="1",session_id=session['id'], file_name=session['file_name'])
 
 @app.route('/dashboard/tcp')
 def dashboard_tcp():
@@ -49,7 +49,7 @@ def dashboard_tcp():
         flash(return_value)
         return redirect('/')
     data = serialized_dict_storage[session['id']]['tcp']
-    return render_template('dashboard/tcp_details.html', nav_item="3",data=data, session_id=session['id'])
+    return render_template('dashboard/tcp_details.html', nav_item="3",data=data, session_id=session['id'], file_name=session['file_name'])
 
 @app.route('/dashboard/udp')
 def dashboard_udp():
@@ -58,7 +58,7 @@ def dashboard_udp():
         flash(return_value)
         return redirect('/')
     data = serialized_dict_storage[session['id']]['udp']
-    return render_template('dashboard/udp_details.html', nav_item="4",data=data, session_id=session['id'])
+    return render_template('dashboard/udp_details.html', nav_item="4",data=data, session_id=session['id'], file_name=session['file_name'])
 
 @app.route('/dashboard/dns')
 def dashboard_dns():
@@ -67,7 +67,7 @@ def dashboard_dns():
         flash(return_value)
         return redirect('/')
     data = serialized_dict_storage[session['id']]['dns']
-    return render_template('dashboard/dns_details.html', nav_item="6",data=data, session_id=session['id'])
+    return render_template('dashboard/dns_details.html', nav_item="6",data=data, session_id=session['id'], file_name=session['file_name'])
 
 @app.route('/dashboard/icmp')
 def dashboard_icmp():
@@ -76,7 +76,7 @@ def dashboard_icmp():
         flash(return_value)
         return redirect('/')
     data = serialized_dict_storage[session['id']]['icmp']
-    return render_template('dashboard/icmp_details.html', nav_item="5",data=data, session_id=session['id'])
+    return render_template('dashboard/icmp_details.html', nav_item="5",data=data, session_id=session['id'], file_name=session['file_name'])
 
 @app.route('/dashboard/analysis')
 def dashboard_analysis():
@@ -85,7 +85,7 @@ def dashboard_analysis():
         flash(return_value)
         return redirect('/')
     data = serialized_dict_storage[session['id']]['analyze']
-    return render_template('dashboard/analysis.html', nav_item="2",data=data, session_id=session['id'])
+    return render_template('dashboard/analysis.html', nav_item="2",data=data, session_id=session['id'], file_name=session['file_name'])
 
 @app.route('/dashboard/table')
 def dashboard_table():
@@ -96,7 +96,7 @@ def dashboard_table():
     data = {}
     data['tcp'] = serialized_dict_storage[session['id']]['analyze']['tcp']
     data['udp'] = serialized_dict_storage[session['id']]['analyze']['udp']
-    return render_template('dashboard/table.html', nav_item="7",data=data, session_id=session['id'])
+    return render_template('dashboard/table.html', nav_item="7",data=data, session_id=session['id'], file_name=session['file_name'])
 
 @app.route('/share/<session_id>')
 def share_session(session_id):

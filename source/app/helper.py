@@ -20,6 +20,7 @@ def manage_file_parse(dump_file):
         random_id = randint(100000, 1000000)
     session.permanent = True
     session['id'] = random_id
+    session['file_name'] = dump_file.filename
     serialized_dict_storage[random_id] = return_value
     return '', True
 
