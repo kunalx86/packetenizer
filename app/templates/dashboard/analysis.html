@@ -1,0 +1,124 @@
+{% extends "dashboard/dashboard.html" %}
+{% block title %}Analysis{% endblock %}
+{% block filename %}{{file_name}}{% endblock %}
+{% block content %}
+<div id="content">
+    <div class="container-fluid">
+        <div class="d-sm-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-dark mb-0">Analysis</h3>
+        </div>
+        <div class="row">
+            <div class="col-lg-7 col-xl-7">
+                <div class="card shadow mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="text-primary font-weight-bold m-0">DNS Overview</h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- &quot;Server1 -->
+                        <div class="chart-area"><canvas data-bss-chart="{&quot;type&quot;:&quot;bar&quot;,&quot;data&quot;:{&quot;labels&quot;:[{% for dns_q in data['dns'] %}&quot;{{ dns_q['server'] }}&quot;{% if loop.index != data['dns']|length %},{% endif %}{% endfor %}],&quot;datasets&quot;:[{&quot;label&quot;:&quot;Total Queries&quot;,&quot;fill&quot;:true,&quot;data&quot;:[{% for dns_q in data['dns'] %}&quot;{{ dns_q['total_queries'] }}&quot;{% if loop.index != data['dns']|length %},{% endif %}{% endfor %}],&quot;backgroundColor&quot;:&quot;rgba(2, 20, 13,0.7)&quot;,&quot;borderColor&quot;:&quot;rgba(2, 20, 13, 1)&quot;},{&quot;label&quot;:&quot;Resolved Queries&quot;,&quot;fill&quot;:true,&quot;data&quot;:[{% for dns_q in data['dns'] %}&quot;{{ dns_q['queries_resolved'] }}&quot;{% if loop.index != data['dns']|length %},{% endif %}{% endfor %}],&quot;backgroundColor&quot;:&quot;rgba(78, 115, 223,0.7)&quot;,&quot;borderColor&quot;:&quot;rgba(78, 115, 223, 1)&quot;}]},&quot;options&quot;:{&quot;maintainAspectRatio&quot;:false,&quot;legend&quot;:{&quot;display&quot;:false},&quot;title&quot;:{},&quot;scales&quot;:{&quot;xAxes&quot;:[{  &quot;gridLines&quot;:{&quot;color&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;zeroLineColor&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;drawBorder&quot;:false,&quot;drawTicks&quot;:false,&quot;borderDash&quot;:[&quot;2&quot;],&quot;zeroLineBorderDash&quot;:[&quot;2&quot;],&quot;drawOnChartArea&quot;:false},&quot;ticks&quot;:{&quot;fontColor&quot;:&quot;#858796&quot;,&quot;padding&quot;:20}}],&quot;yAxes&quot;:[{&quot;gridLines&quot;:{&quot;color&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;zeroLineColor&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;drawBorder&quot;:false,&quot;drawTicks&quot;:false,&quot;borderDash&quot;:[&quot;2&quot;],&quot;zeroLineBorderDash&quot;:[&quot;2&quot;]},&quot;ticks&quot;:{&quot;beginAtZero&quot;:&quot;true&quot;,&quot;fontColor&quot;:&quot;#858796&quot;,&quot;padding&quot;:20}}]}}}"></canvas></div>
+                        <div class="text-center small mt-4"><span class="mr-2">&nbsp;Total Queries / Resolved Queries  v/s Servers</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 col-xl-5">
+                <div class="card shadow border-left-info py-2">
+                    <div class="card-body">
+                        <div class="row align-items-info no-gutters">
+                            <div class="col mr-2">
+                                <div class="text-uppercase text-danger font-weight-bold text-xs mb-1"><span>Unidentified Packets</span></div>
+                                {% for packet in data['invalid'] %}
+                                    <div class="text-dark h5 mb-0"><span>Hosts {{ packet.source_address }} and {{ packet.destination_address }} exchanged {{ packet.count }} unidentified packets</span></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-7 col-xl-5">
+                <div class="card shadow mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="text-primary font-weight-bold m-0">Data Transferred Summary</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-area"><canvas data-bss-chart="{&quot;type&quot;:&quot;doughnut&quot;,&quot;data&quot;:{&quot;labels&quot;:[&quot;Upload&quot;,&quot;Download&quot;],&quot;datasets&quot;:[{&quot;label&quot;:&quot;&quot;,&quot;backgroundColor&quot;:[&quot;#4e73df&quot;,&quot;#36b9cc&quot;],&quot;borderColor&quot;:[&quot;#ffffff&quot;,&quot;#ffffff&quot;],&quot;data&quot;:[&quot;{{ data['counts']['tcp_uploaded']+data['counts']['udp_uploaded'] }}&quot;,&quot;{{ data['counts']['tcp_downloaded']+data['counts']['udp_downloaded'] }}&quot;]}]},&quot;options&quot;:{&quot;maintainAspectRatio&quot;:false,&quot;legend&quot;:{&quot;display&quot;:false},&quot;title&quot;:{}}}"></canvas></div>
+                        <div class="text-center small mt-4"><span class="mr-2"><i class="fas fa-circle text-primary"></i>&nbsp;Upload</span><span class="mr-2"><i class="fas fa-circle text-info"></i>&nbsp;Download</span></div>
+                        <div class="text-center small mt-4"><span class="mr-2">&nbsp;In Bytes</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 col-xl-7">
+                <div class="card shadow mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="text-primary font-weight-bold m-0">Average Response Time Summary</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-area"><canvas data-bss-chart="{&quot;type&quot;:&quot;bar&quot;,&quot;data&quot;:{&quot;labels&quot;:[{% for dns_q in data['dns'] %}&quot;{{ dns_q['server'] }}&quot;{% if loop.index != data['dns']|length %},{% endif %}{% endfor %}],&quot;datasets&quot;:[{&quot;label&quot;:&quot;Avg Response Time&quot;,&quot;fill&quot;:true,&quot;data&quot;:[{% for dns_q in data['dns'] %}&quot;{{ dns_q['avg_response_time'] }}&quot;{% if loop.index != data['dns']|length %},{% endif %}{% endfor %}],&quot;backgroundColor&quot;:&quot;rgba(78, 115, 223, 1)&quot;,&quot;borderColor&quot;:&quot;rgba(78, 115, 223, 1)&quot;}]},&quot;options&quot;:{&quot;maintainAspectRatio&quot;:false,&quot;legend&quot;:{&quot;display&quot;:false},&quot;title&quot;:{},&quot;scales&quot;:{&quot;xAxes&quot;:[{&quot;gridLines&quot;:{&quot;color&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;zeroLineColor&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;drawBorder&quot;:false,&quot;drawTicks&quot;:false,&quot;borderDash&quot;:[&quot;2&quot;],&quot;zeroLineBorderDash&quot;:[&quot;2&quot;],&quot;drawOnChartArea&quot;:false},&quot;ticks&quot;:{&quot;fontColor&quot;:&quot;#858796&quot;,&quot;padding&quot;:20}}],&quot;yAxes&quot;:[{&quot;gridLines&quot;:{&quot;color&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;zeroLineColor&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;drawBorder&quot;:false,&quot;drawTicks&quot;:false,&quot;borderDash&quot;:[&quot;2&quot;],&quot;zeroLineBorderDash&quot;:[&quot;2&quot;]},&quot;ticks&quot;:{&quot;beginAtZero&quot;:&quot;true&quot;,&quot;fontColor&quot;:&quot;#858796&quot;,&quot;padding&quot;:20}}]}}}"></canvas></div>
+                        <div class="text-center small mt-4"><span class="mr-2">&nbsp;Response Time v/s Servers</span></div>
+                        <div class="text-center small mt-4"><span class="mr-2">&nbsp;In Mili Secnds</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-7 col-xl-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="text-primary font-weight-bold m-0">Average Ping Summary</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-area"><canvas data-bss-chart="{&quot;type&quot;:&quot;bar&quot;,&quot;data&quot;:{&quot;labels&quot;:[{% for icmp_p in data['icmp'] %}&quot;{{ icmp_p['source_address'] }} / {{ icmp_p['destination_address'] }}&quot;{% if loop.index != data['icmp']|length %},{% endif %}{% endfor %}],&quot;datasets&quot;:[{&quot;label&quot;:&quot;Avg Pinge&quot;,&quot;fill&quot;:true,&quot;data&quot;:[{% for icmp_p in data['icmp'] %}&quot;{{ icmp_p['avg_ping'] }}&quot;{% if loop.index != data['icmp']|length %},{% endif %}{% endfor %}],&quot;backgroundColor&quot;:&quot;rgba(78, 115, 223, 1)&quot;,&quot;borderColor&quot;:&quot;rgba(78, 115, 223, 1)&quot;}]},&quot;options&quot;:{&quot;maintainAspectRatio&quot;:false,&quot;legend&quot;:{&quot;display&quot;:false},&quot;title&quot;:{},&quot;scales&quot;:{&quot;xAxes&quot;:[{&quot;gridLines&quot;:{&quot;color&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;zeroLineColor&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;drawBorder&quot;:false,&quot;drawTicks&quot;:false,&quot;borderDash&quot;:[&quot;2&quot;],&quot;zeroLineBorderDash&quot;:[&quot;2&quot;],&quot;drawOnChartArea&quot;:false},&quot;ticks&quot;:{&quot;fontColor&quot;:&quot;#858796&quot;,&quot;padding&quot;:20}}],&quot;yAxes&quot;:[{&quot;gridLines&quot;:{&quot;color&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;zeroLineColor&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;drawBorder&quot;:false,&quot;drawTicks&quot;:false,&quot;borderDash&quot;:[&quot;2&quot;],&quot;zeroLineBorderDash&quot;:[&quot;2&quot;]},&quot;ticks&quot;:{&quot;beginAtZero&quot;:&quot;true&quot;,&quot;fontColor&quot;:&quot;#858796&quot;,&quot;padding&quot;:20}}]}}}"></canvas></div>
+                        <div class="text-center small mt-4"><span class="mr-2">&nbsp;Average Ping v/s Server / Client</span></div>
+                        <div class="text-center small mt-4"><span class="mr-2">&nbsp;In Mili Secnds</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 col-xl-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="text-primary font-weight-bold m-0">Exchanged Packets Summary</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-area"><canvas data-bss-chart="{&quot;type&quot;:&quot;bar&quot;,&quot;data&quot;:{&quot;labels&quot;:[{% for icmp_p in data['icmp'] %}&quot;{{ icmp_p['source_address'] }} / {{ icmp_p['destination_address'] }}&quot;{% if loop.index != data['icmp']|length %},{% endif %}{% endfor %}],&quot;datasets&quot;:[{&quot;label&quot;:&quot;Packets Exchanged&quot;,&quot;fill&quot;:true,&quot;data&quot;:[{% for icmp_p in data['icmp'] %}&quot;{{ icmp_p['total_packets'] }}&quot;{% if loop.index != data['icmp']|length %},{% endif %}{% endfor %}],&quot;backgroundColor&quot;:&quot;rgba(78, 115, 223, 1)&quot;,&quot;borderColor&quot;:&quot;rgba(78, 115, 223, 1)&quot;}]},&quot;options&quot;:{&quot;maintainAspectRatio&quot;:false,&quot;legend&quot;:{&quot;display&quot;:false},&quot;title&quot;:{},&quot;scales&quot;:{&quot;xAxes&quot;:[{&quot;gridLines&quot;:{&quot;color&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;zeroLineColor&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;drawBorder&quot;:false,&quot;drawTicks&quot;:false,&quot;borderDash&quot;:[&quot;2&quot;],&quot;zeroLineBorderDash&quot;:[&quot;2&quot;],&quot;drawOnChartArea&quot;:false},&quot;ticks&quot;:{&quot;fontColor&quot;:&quot;#858796&quot;,&quot;padding&quot;:20}}],&quot;yAxes&quot;:[{&quot;gridLines&quot;:{&quot;color&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;zeroLineColor&quot;:&quot;rgb(234, 236, 244)&quot;,&quot;drawBorder&quot;:false,&quot;drawTicks&quot;:false,&quot;borderDash&quot;:[&quot;2&quot;],&quot;zeroLineBorderDash&quot;:[&quot;2&quot;]},&quot;ticks&quot;:{&quot;beginAtZero&quot;:&quot;true&quot;,&quot;fontColor&quot;:&quot;#858796&quot;,&quot;padding&quot;:20}}]}}}"></canvas></div>
+                        <div class="text-center small mt-4"><span class="mr-2">&nbsp;Packets Exchanged v/s Server / Client</span></div>
+                        <div class="text-center small mt-4"><span class="mr-2">&nbsp;In Mili Secnds</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  -->
+        {% for packet in data['tcp']+data['udp'] %}
+        <div class="row">
+            {% if packet['is_dos'] %}
+            <div class="col-md-6 col-xl-5.5 mb-4">
+                <div class="card shadow border-left-danger py-2">
+                    <div class="card-body">
+                        <div class="row align-items-center no-gutters">
+                            <div class="col mr-2">
+                                <div class="text-uppercase text-danger font-weight-bold text-xs mb-1"><span>DOS Info</span></div>
+                                <div class="text-dark h5 mb-0"><span>Host {{ packet.source_address }} may have performed DoS on host {{ packet.destination_address }} </span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% elif 'is_nmap' in packet and packet['is_nmap'] %}
+            <div class="col-md-6 col-xl-5.5 mb-4">
+                <div class="card shadow border-left-warning py-2">
+                    <div class="card-body">
+                        <div class="row align-items-center no-gutters">
+                            <div class="col mr-2">
+                                <div class="text-uppercase text-warning font-weight-bold text-xs mb-1"><span>NMAP Info</span></div>
+                                <div class="text-dark h5 mb-0"><span>Host {{ packet.source_address }} may have performed NMAP scan on host {{ packet.destination_address }} </span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

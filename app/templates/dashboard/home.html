@@ -1,0 +1,103 @@
+{% extends "dashboard/dashboard.html" %}
+{% block title %}Home{% endblock %}
+{% block filename %}{{file_name}}{% endblock %}
+{% block content %}
+    <div id="content">
+        <div class="container-fluid">
+            <div class="d-sm-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-dark mb-0">Homepage</h3>
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-xl-5 mb-4">
+                    <div class="card shadow border-left-primary py-2">
+                        <div class="card-body">
+                            <div class="row align-items-center no-gutters">
+                                <div class="col mr-2">
+                                    <div class="text-uppercase text-primary font-weight-bold text-xs mb-1"><span>Total Data Downloaded</span></div>
+                                    <div class="text-dark font-weight-bold h5 mb-0"><span>{{ '{0:.2f} MB'.format((data['tcp_downloaded']+data['udp_downloaded'])/(1024 ** 2)) }}</span></div>
+                                </div>
+                                <div class="col-auto"><i class="fas fa-download fa-2x text-gray-300"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-1 mb-4"></div>
+                <div class="col-md-6 col-xl-5 mb-4">
+                    <div class="card shadow border-left-success py-2">
+                        <div class="card-body">
+                            <div class="row align-items-center no-gutters">
+                                <div class="col mr-2">
+                                    <div class="text-uppercase text-success font-weight-bold text-xs mb-1"><span>Total Data Uploaded</span></div>
+                                    <div class="text-dark font-weight-bold h5 mb-0"><span>{{ '{0:.2f} MB'.format((data['tcp_uploaded']+data['udp_uploaded'])/(1024 ** 2)) }}</span></div>
+                                </div>
+                                <div class="col-auto"><i class="fas fa-upload fa-2x text-gray-300"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-1 mb-4"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-xl-4 mb-4">
+                    <div class="card shadow border-left-danger py-2">
+                        <div class="card-body">
+                            <div class="row align-items-center no-gutters">
+                                <div class="col mr-2">
+                                    <div class="text-uppercase text-danger font-weight-bold text-xs mb-1"><span>Threats Identified</span></div>
+                                    <div class="text-dark font-weight-bold h5 mb-0"><span>{{ data['threats'] }}</span></div>
+                                </div>
+                                <div class="col-auto"><i class="fas fa-exclamation-circle fa-2x text-gray-300"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-1 mb-4"></div>
+                <div class="col-md-6 col-xl-3 mb-4">
+                    <div class="card shadow border-left-info py-2">
+                        <div class="card-body">
+                            <div class="row align-items-center no-gutters">
+                                <div class="col mr-2">
+                                    <div class="text-uppercase text-info font-weight-bold text-xs mb-1"><span>Total TCP Connections</span></div>
+                                    <div class="text-dark font-weight-bold h5 mb-0"><span>{{ data['tcp_con'] }}</span></div>
+                                </div>
+                                <div class="col-auto"><i class="fas fa-plug fa-2x text-gray-300"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-1 mb-4"></div>
+                <div class="col-md-6 col-xl-3 mb-4">
+                    <div class="card shadow border-left-warning py-2">
+                        <div class="card-body">
+                            <div class="row align-items-center no-gutters">
+                                <div class="col mr-2">
+                                    <div class="text-uppercase text-warning font-weight-bold text-xs mb-1"><span>Total UDP Connections</span></div>
+                                    <div class="text-dark font-weight-bold h5 mb-0"><span>{{ data['udp_con'] }}</span></div>
+                                </div>
+                                <div class="col-auto"><i class="fas fa-network-wired fa-2x text-gray-300"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-5 col-xl-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="text-primary font-weight-bold m-0">Total Data Transfer Summary</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area"><canvas data-bss-chart="{&quot;type&quot;:&quot;doughnut&quot;,&quot;data&quot;:{&quot;labels&quot;:[&quot;TCP Upload&quot;,&quot;TCP Download&quot;,&quot;UDP Upload&quot;,&quot;UDP Download&quot;],&quot;datasets&quot;:[{&quot;label&quot;:&quot;&quot;,&quot;backgroundColor&quot;:[&quot;#4e73df&quot;,&quot;#1cc88a&quot;,&quot;#36b9cc&quot;,&quot;#f6c23e&quot;],&quot;borderColor&quot;:[&quot;#ffffff&quot;,&quot;#ffffff&quot;,&quot;#ffffff&quot;],&quot;data&quot;:[&quot;{{ data['tcp_uploaded'] }}&quot;,&quot;{{ data['tcp_downloaded'] }}&quot;,&quot;{{ data['udp_uploaded'] }}&quot;,&quot;{{ data['udp_downloaded'] }}&quot;]}]},&quot;options&quot;:{&quot;maintainAspectRatio&quot;:false,&quot;legend&quot;:{&quot;display&quot;:false},&quot;title&quot;:{}}}"></canvas></div>
+                            <div class="text-center small mt-4">
+                                <span class="mr-2"><i class="fas fa-circle text-primary"></i>&nbsp;TCP Upload</span>
+                                <span class="mr-2"><i class="fas fa-circle text-success"></i>&nbsp;TCP Download</span>
+                                <span class="mr-2"><i class="fas fa-circle text-info"></i>&nbsp;UDP Upload</span>
+                                <span class="mr-2"><i class="fas fa-circle text-warning"></i>&nbsp;UDP Download</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
