@@ -1,5 +1,5 @@
 import sys
-from scapy.all import rdpcap 
+from scapy.all import rdpcap
 from scapy.error import Scapy_Exception
 from packetenizer import core
 from packetenizer.helper import module
