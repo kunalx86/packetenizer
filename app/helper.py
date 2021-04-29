@@ -22,6 +22,7 @@ def manage_file_parse(dump_file):
     session['id'] = random_id
     session['file_name'] = dump_file.filename
     serialized_dict_storage[random_id] = return_value
+    serialized_dict_storage[random_id]['file_name'] = dump_file.filename
     return '', True
 
 def test_session():
