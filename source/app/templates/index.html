@@ -38,6 +38,19 @@
     <link rel="stylesheet" href="/static/fonts/simple-line-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <style>
+        #spinner-form {
+            display: none;
+            margin-right: 5px;
+        }
+
+        .load-spinner {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
 </head>
@@ -102,12 +115,18 @@
         {% endfor %} {% endif %} {% endwith %}
         <div class="row">
             <div class="col-md-12">
-                <form method="POST" action="/file" enctype="multipart/form-data">
+                <form id="file-submit" method="POST" action="/file" enctype="multipart/form-data">
                     <div class="form-group files color">
                         <label> </label>
                         <input type="file" class="form-control" name="dump-file" id="dump-file" required>
                     </div>
-                    <div class="col-md-12 "><button class="btn btn-primary btn-block btn-lg" type="submit">Upload</button></div>
+                    <div class="col-md-12 ">
+                        <button id="form-submit" class="btn btn-primary btn-block btn-lg load-spinner text-center" type="submit">
+                            <span id="spinner-form" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Upload
+                        </button>
+                        <div style="display: flex;flex-direction: column;align-items: center;width: 100%;padding: 10px;" > <p id="loading-text" style="display: none;">Hang on this can take some time!</p> </div>
+                    </div>
                     <label> </label>
                 </form>
             </div>
@@ -170,6 +189,15 @@
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/bs-init.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#file-submit").on('submit', function() {
+                $("#spinner-form").css("display", "inline");
+                $("#form-submit").prop("disabled", true);
+                $("#loading-text").css("display", "inline");
+            })
+        })
+    </script>
 </body>
 
 </html>

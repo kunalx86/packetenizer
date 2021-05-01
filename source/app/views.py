@@ -103,6 +103,7 @@ def share_session(session_id):
     if int(session_id) in serialized_dict_storage:
         session.permanent = False
         session['id'] = int(session_id)
+        session['file_name'] = serialized_dict_storage[int(session_id)]['file_name'] 
         return redirect('/dashboard/home')
     else:
         flash("Not a valid share url")

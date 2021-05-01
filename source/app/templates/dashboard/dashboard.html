@@ -34,6 +34,26 @@
     <link rel="stylesheet" href="/static/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="/static/fonts/font-awesome.min.css">
     <link rel="stylesheet" href="/static/fonts/fontawesome5-overrides.min.css">
+    <style>
+        .button-tooltip-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 16px;
+            min-height: 30px;
+        }
+        .invisible {
+            display: none;
+        }
+        .visible {
+            display: inline;
+        }
+        #custom-tooltip {
+            padding: 5px 12px;
+            background-color: hsl(252, 5%, 38%);
+            border-radius: 4px;
+        }
+    </style>
 </head>
 
 <body id="page-top">
@@ -68,6 +88,9 @@
                     <div class="text-center my-auto">
                         <button id="copy-button" class="btn btn-primary">Copy link!</button>
                         <a class="text-center my-auto btn btn-primary " role="button" href="/">Goto Homepage</a>
+                        <div class="button-tooltip-container">
+                            <span id="custom-tooltip" class="invisible">Copied!</span>
+                        </div>
                     </div>
                     <div class="text-center my-auto copyright"><span>Copyright © Packetenizer 2021</span></div>
                 </div>
@@ -85,14 +108,19 @@
         navItem.classList.add("active")
 
         const copyButton = document.getElementById("copy-button");
-        copyButton.addEventListener('click', (e) => {
-            navigator.clipboard.writeText(window.location.origin + "/share/{{session_id}}")
-                .then(() => {
-                    console.log("copied");
-                })
-                .catch(() => {
-                    console.log("copy failed");
-                })
+        copyButton.addEventListener('click', async (e) => {
+            const copyDiv = document.getElementById("custom-tooltip");
+            copyDiv.classList.remove('invisible');
+            copyDiv.classList.add('visible');
+            try {
+                await navigator.clipboard.writeText(window.location.origin + "/share/{{session_id}}")
+            } catch(e) {
+                copyDiv.textContent = "Copy Failed!";
+            }
+            setTimeout(() => {
+                copyDiv.classList.remove('visible');
+                copyDiv.classList.add('invisible');
+            }, 2000);
         })
     </script>
 </body>
