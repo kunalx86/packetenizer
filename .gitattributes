@@ -3,3 +3,4 @@ source/app/static/js/* linguist-vendored
 source/app/static/fonts/* linguist-vendored
 test-notebook/* linguist-vendored
 synopsis-latex/* linguist-vendored
+synopsis-latex/chapters/* linguist-vendored
