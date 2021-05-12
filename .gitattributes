@@ -1,3 +1,5 @@
-source/app/static/* linguist-vendored
+source/app/static/css/* linguist-vendored
+source/app/static/js/* linguist-vendored
+source/app/static/fonts/* linguist-vendored
 test-notebook/* linguist-vendored
 synopsis-latex/* linguist-vendored
