@@ -1,0 +1,3 @@
+source/app/static/* linguist-vendored
+test-notebook/* linguist-vendored
+synopsis-latex/* linguist-vendored

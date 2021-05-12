@@ -9,7 +9,7 @@
 */.ipynb_checkpoints/*
 .DS_STORE
 
-.vscode/
+.vscode/*
 
 # Virtualenv related
 bin/

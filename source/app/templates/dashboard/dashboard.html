@@ -104,6 +104,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.js"></script>
     <script src="/static/js/theme.js"></script>
     <script type="text/javascript">
+        let state = JSON.parse(localStorage.getItem('nav-toggle'));
+        function toggleNav(_) {
+            $("body").toggleClass("sidebar-toggled");
+            $(".sidebar").toggleClass("toggled");
+            if ($(".sidebar").hasClass("toggled")) {
+                $('.sidebar .collapse').collapse('hide');
+            };
+            localStorage.setItem('nav-toggle', state);
+        }
+        if (state) {
+            toggleNav(null);
+        }
         const navItem = document.getElementById("nav-item-{{nav_item}}");
         navItem.classList.add("active")
 
@@ -122,6 +134,10 @@
                 copyDiv.classList.add('invisible');
             }, 2000);
         })
+        $("#sidebarToggle, #sidebarToggleTop").on('click', (_) => {
+            state = !state;
+            toggleNav(_);
+        });
     </script>
 </body>
 

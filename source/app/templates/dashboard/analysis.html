@@ -21,11 +21,11 @@
                 </div>
             </div>
             <div class="col-lg-5 col-xl-5">
-                <div class="card shadow border-left-info py-2">
+                <div class="card shadow py-2 mb-4">
                     <div class="card-body">
                         <div class="row align-items-info no-gutters">
                             <div class="col mr-2">
-                                <div class="text-uppercase text-danger font-weight-bold text-xs mb-1"><span>Unidentified Packets</span></div>
+                                <div class="text-primary mb-1"><span>Unidentified Packets</span></div>
                                 {% for packet in data['invalid'] %}
                                     <div class="text-dark h5 mb-0"><span>Hosts {{ packet.source_address }} and {{ packet.destination_address }} exchanged {{ packet.count }} unidentified packets</span></div>
                                 {% endfor %}
