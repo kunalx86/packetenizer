@@ -9,6 +9,7 @@
             </div>
             <!-- Your loop starts here -->
             {% for n_value in data %}
+            {% if not n_value['invisible'] %}
             <div class="row">
                 <div class="col-md-6 col-xl-5.5 mb-4">
                     <div class="card shadow border-left-success py-2">
@@ -44,6 +45,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
             {% endfor %}
         </div>
     </div>
