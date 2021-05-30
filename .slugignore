@@ -1,0 +1,6 @@
+*.md
+/test-notebook
+/synopsis-latex
+/samples
+/.vscode
+/outputs
