@@ -1,3 +1,5 @@
+# Copyright (C) 2021 Kunal Joshi, Jainam Joshi, Brijesh Ghonia
+
 from .module import ICMP, DNS, TCPSegment, UDPDatagram, Invalid
 from packetenizer.core import CoreStructure
 

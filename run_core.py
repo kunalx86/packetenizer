@@ -1,3 +1,5 @@
+# Copyright (C) 2021 Kunal Joshi, Jainam Joshi, Brijesh Ghonia
+
 import sys
 from scapy.all import rdpcap
 from scapy.error import Scapy_Exception
