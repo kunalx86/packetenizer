@@ -1,3 +1,5 @@
+# Copyright (C) 2021 Kunal Joshi, Jainam Joshi, Brijesh Ghonia
+
 from scapy.error import Scapy_Exception
 from scapy.all import rdpcap
 from packetenizer.core import CoreStructure

@@ -1,3 +1,5 @@
+# Copyright (C) 2021 Kunal Joshi, Jainam Joshi, Brijesh Ghonia
+
 from .helper import module
 from scapy.plist import PacketList
 class CoreStructure:

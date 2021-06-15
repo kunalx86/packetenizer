@@ -1,3 +1,5 @@
+# Copyright (C) 2021 Kunal Joshi, Jainam Joshi, Brijesh Ghonia
+
 from packetenizer import parse_and_analyze
 from random import randint
 from flask import session

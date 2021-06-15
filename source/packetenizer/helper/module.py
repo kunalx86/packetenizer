@@ -1,3 +1,5 @@
+# Copyright (C) 2021 Kunal Joshi, Jainam Joshi, Brijesh Ghonia
+
 import datetime
 from dateutil import tz
 from itertools import zip_longest
